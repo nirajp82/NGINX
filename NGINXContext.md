@@ -28,8 +28,14 @@ Some common details that are configured in the main context are the system user 
 ## The Events Context
 The “events” context is contained within the “main” context. It is used to set global options that affect how Nginx handles connections at a general level. There can only be a single events context defined within the Nginx configuration.
 
+Nginx uses an event-based connection processing model, so the directives defined within this context determine how worker processes should handle connections. The event-driven model enables NGINX to efficiently manage multiple connections without relying on a separate thread or process for each connection.
+
 This context will look like this in the configuration file, outside of any other bracketed contexts:
+
 ![image](https://github.com/nirajp82/NGINX/assets/61636643/41aad2a8-9056-4034-8e65-0fd673e0bddc)
+
+In this example, the worker_connections directive is set to 1024, which determines the maximum number of simultaneous connections that each worker process can handle. This directive impacts how NGINX allocates resources and handles incoming connections.
+
 
 
 References:

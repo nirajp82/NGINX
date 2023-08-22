@@ -76,8 +76,8 @@ In this example:
   * The `location /` block specifies that requests should be served from the `/var/www/example` directory and use `index.html` as the default `index` file.
   * The `location /images/` block uses the `alias` directive to serve image files from the `/var/www/example/images/` directory.
 * The second server context handles requests for another-domain.com.
- * The `location /` block specifies that requests should be served from the `/var/www/another` directory and use `index.php` or `index.html` as the default index files.
- * The `location ~ \.php$` block defines how to process PHP files using PHP-FPM for dynamic content.
+  * The `location /` block specifies that requests should be served from the `/var/www/another` directory and use `index.php` or `index.html` as the default index files.
+  * The `location ~ \.php$` block defines how to process PHP files using PHP-FPM for dynamic content.
 
 
 Within the server context, you can use directives to configure various aspects of your virtual server, such as:

@@ -59,8 +59,36 @@ Within the http context, you can use various directives to configure aspects of 
 * Setting up virtual server blocks (server contexts) for different domain names.
 * Defining request and response headers.
 
-
 This context includes directives that affect how the server handles HTTP requests, such as defining server blocks, setting up proxying, configuring SSL, enabling compression, and more.
+
+## The Server Context
+Within the http context, you can have multiple server blocks. Each server block represents a virtual server that handles requests for a specific domain or IP address. Inside the server context, you can define directives that are specific to that virtual server, such as listen ports, server_name, SSL settings, and request handling rules.
+
+The server context is where you configure the behavior of your NGINX server for a specific website or application. It includes directives that define how requests should be processed, what content should be served, and how the server should respond to different scenarios.
+
+![image](https://github.com/nirajp82/NGINX/assets/61636643/75376afe-5775-4bfa-959e-7da6763ea4e3)
+
+In this example:
+
+* Inside the http context, there are two server contexts defined, each corresponding to a different domain.
+* The listen directive specifies the port (in this case, port 80) on which the server should listen for incoming connections.
+* The server_name directive defines the domain names for which this virtual server should handle requests.
+* Inside each server block, you can use various directives to configure how NGINX should handle requests for the associated domain.
+
+Within the server context, you can use directives to configure various aspects of your virtual server, such as:
+
+* Setting up request handling rules.
+* Defining URL paths and how they map to file paths on the server.
+* Configuring SSL/TLS settings for HTTPS.
+* Enabling or disabling specific features like compression or caching.
+* Redirecting or rewriting URLs.
+* Configuring proxying to backend servers.
+
+The server context allows you to customize the behavior of your NGINX server for different domains or IP addresses, making it possible to host multiple websites or applications on the same server with distinct configurations.
+
+
+
+
 
 
 

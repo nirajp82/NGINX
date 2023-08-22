@@ -66,14 +66,19 @@ Within the http context, you can have multiple server blocks. Each server block 
 
 The server context is where you configure the behavior of your NGINX server for a specific website or application. It includes directives that define how requests should be processed, what content should be served, and how the server should respond to different scenarios.
 
-![image](https://github.com/nirajp82/NGINX/assets/61636643/75376afe-5775-4bfa-959e-7da6763ea4e3)
+![image](https://github.com/nirajp82/NGINX/assets/61636643/c16d99a4-f65f-4dd4-9a30-0923dec8cc63)
+
 
 In this example:
 
-* Inside the http context, there are two server contexts defined, each corresponding to a different domain.
-* The listen directive specifies the port (in this case, port 80) on which the server should listen for incoming connections.
-* The server_name directive defines the domain names for which this virtual server should handle requests.
-* Inside each server block, you can use various directives to configure how NGINX should handle requests for the associated domain.
+* There are two `server` contexts, each representing a different website (`example.com` and `another-domain.com`).
+* The first `server` context handles requests for `example.co`m and `www.example.com`.
+  * The `location /` block specifies that requests should be served from the `/var/www/example` directory and use `index.html` as the default `index` file.
+  * The `location /images/` block uses the `alias` directive to serve image files from the `/var/www/example/images/` directory.
+* The second server context handles requests for another-domain.com.
+ * The `location /` block specifies that requests should be served from the `/var/www/another` directory and use `index.php` or `index.html` as the default index files.
+ * The `location ~ \.php$` block defines how to process PHP files using PHP-FPM for dynamic content.
+
 
 Within the server context, you can use directives to configure various aspects of your virtual server, such as:
 

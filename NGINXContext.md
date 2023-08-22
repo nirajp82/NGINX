@@ -40,7 +40,8 @@ In this example, the worker_connections directive is set to 1024, which determin
 Defining an HTTP context is probably the most common use of Nginx. When configuring Nginx as a web server or reverse proxy, the “http” context will hold the majority of the configuration. This context will contain all of the directives and other contexts necessary to define how the program will handle HTTP or HTTPS connections.
 
 The http context is a sibling of the events context, so they should be listed side-by-side, rather than nested. They both are children of the main context:
-   ![image](https://github.com/nirajp82/NGINX/assets/61636643/a00fee05-eb87-4921-aaae-60410bdab2a6)
+
+![image](https://github.com/nirajp82/NGINX/assets/61636643/a00fee05-eb87-4921-aaae-60410bdab2a6)
 
 In this example:
 * The `http` context encapsulates all the HTTP-related configurations.

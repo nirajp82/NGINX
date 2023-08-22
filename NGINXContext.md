@@ -36,6 +36,31 @@ This context will look like this in the configuration file, outside of any other
 
 In this example, the worker_connections directive is set to 1024, which determines the maximum number of simultaneous connections that each worker process can handle. This directive impacts how NGINX allocates resources and handles incoming connections.
 
+## The HTTP Context
+Defining an HTTP context is probably the most common use of Nginx. When configuring Nginx as a web server or reverse proxy, the “http” context will hold the majority of the configuration. This context will contain all of the directives and other contexts necessary to define how the program will handle HTTP or HTTPS connections.
+
+The http context is a sibling of the events context, so they should be listed side-by-side, rather than nested. They both are children of the main context:
+   ![image](https://github.com/nirajp82/NGINX/assets/61636643/a00fee05-eb87-4921-aaae-60410bdab2a6)
+
+In this example:
+* The `http` context encapsulates all the HTTP-related configurations.
+* The `include` directive is used to include the `mime.types` file, which defines mappings between file extensions and MIME types.
+* The `default_type` directive sets the default MIME type for files that do not match any defined types.
+* The `server_tokens` directive disables the inclusion of NGINX version details in response headers.
+* Inside the `server` block, you can configure how NGINX handles requests for the domain `example.com`.
+  
+Within the http context, you can use various directives to configure aspects of your HTTP server, such as:
+* Defining SSL certificates and enabling HTTPS.
+* Setting up proxying to backend servers.
+* Configuring SSL/TLS settings.
+* Enabling compression for responses.
+* Configuring error pages.
+* Setting up virtual server blocks (server contexts) for different domain names.
+* Defining request and response headers.
+
+
+This context includes directives that affect how the server handles HTTP requests, such as defining server blocks, setting up proxying, configuring SSL, enabling compression, and more.
+
 
 
 References:

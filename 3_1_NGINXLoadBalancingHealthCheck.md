@@ -235,7 +235,7 @@ The time value (here, 30 seconds) sets the time during which NGINX Plus ramps up
 Note that if there is only a single server in a group, the max_fails, fail_timeout, and slow_start parameters to the server directive are ignored and the server is never considered unavailable.
 
 -  **max_fails:** Sets the maximum number of consecutive failures allowed before considering a server as unhealthy.
--  **fail_timeout:** Defines the time during which failures are counted. It sets the period during which that number of errors or timeouts must occur, as well as how long NGINX waits to try the server again after marking it unhealthy.  (default is 10 seconds).
+-  **fail_timeout:** Defines the time during which failures are counted. It sets the period during which that number of errors or timeouts must occur, as well as how long NGINX waits to try the server again (To check if server is available) after marking it unhealthy.  (default is 10 seconds).
 
 In the following example, if NGINX fails to send a request to a server or does not receive a response from it 3 times in 30 seconds, it marks the server as unavailable for 30 seconds:
 

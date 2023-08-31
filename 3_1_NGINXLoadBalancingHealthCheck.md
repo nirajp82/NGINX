@@ -15,10 +15,11 @@ This guide provides an in-depth understanding of Nginx load balancing concepts, 
 3. **Configuring Load Balancing in Nginx**
     - Upstream Block
     - Load Balancing Algorithms
-4. **Health Checks**
+4. **Enabling Session Persistence**
+5. **Health Checks**
     - Active Health Checks (Nginx Plus)
     - Passive Health Checks
-5. **Configuration Examples**
+6. **Configuration Examples**
 
 ---
 
@@ -144,6 +145,50 @@ http {
     }
 }
 ```
+## 4. Enabling Session Persistence
+
+Session persistence means that NGINX Plus identifies user sessions and routes all requests in a given session to the same upstream server.
+
+NGINX Plus supports three session persistence methods. The methods are set with the sticky directive. (For session persistence with NGINX Open Source, use the hash or ip_hash directive as described above.)
+
+- **Sticky cookie** NGINX Plus adds a session cookie to the first response from the upstream group and identifies the server that sent the response. The client’s next request contains the cookie value and NGINX Plus route the request to the upstream server that responded to the first request:
+```nginx
+upstream backend {
+    server backend1.example.com;
+    server backend2.example.com;
+    sticky cookie srv_id expires=1h domain=.example.com path=/;
+}
+```
+- **Sticky route:** NGINX Plus assigns a “route” to the client when it receives the first request. All subsequent requests are compared to the route parameter of the server directive to identify the server to which the request is proxied. The route information is taken from either a cookie or the request URI.
+```nginx
+  	upstream backend {
+    		server backend1.example.com route=a;
+    		server backend2.example.com route=b;
+    		sticky route $route_cookie $route_uri;
+	}
+```
+- **Sticky learn** NGINX Plus first finds session identifiers by inspecting requests and responses. Then NGINX Plus “learns” which upstream server corresponds to which session identifier. Generally, these identifiers are passed in a HTTP cookie. If a request contains a session identifier already “learned”, NGINX Plus forwards the request to the corresponding server:
+```nginx
+  upstream backend {
+   server backend1.example.com;
+   server backend2.example.com;
+   sticky learn
+       create=$upstream_cookie_examplecookie
+       lookup=$cookie_examplecookie
+       zone=client_sessions:1m
+       timeout=1h;
+}
+```
+In the example, one of the upstream servers creates a session by setting the cookie EXAMPLECOOKIE in the response.
+
+The mandatory create parameter specifies a variable that indicates how a new session is created. In the example, new sessions are created from the cookie EXAMPLECOOKIE sent by the upstream server.
+
+The mandatory lookup parameter specifies how to search for existing sessions. In our example, existing sessions are searched in the cookie EXAMPLECOOKIE sent by the client.
+
+The mandatory zone parameter specifies a shared memory zone where all information about sticky sessions is kept. In our example, the zone is named client_sessions and is 1 megabyte in size.
+
+This is a more sophisticated session persistence method than the previous two as it does not require keeping any cookies on the client side: all info is kept server‑side in the shared memory zone.
+
 
 #### Load Balancing Algorithms Parameters
 
@@ -201,7 +246,7 @@ upstream backend {
 }
   ```
 Note that if there is only a single server in a group, the fail_timeout and max_fails parameters are ignored and the server is never marked unavailable.
-## 4. Health Checks
+## 5. Health Checks
 
 ### Active Health Checks (Nginx Plus)
 
@@ -213,7 +258,7 @@ Nginx periodically sends requests to backend servers to assess their health. Unh
 
 Passive health checks rely on external monitoring systems to report server health. Nginx reacts to these reports, redirecting traffic away from unhealthy servers.
 
-## 5. Configuration Examples
+## 6. Configuration Examples
 
 ### Active Health Checks (Nginx Plus)
 

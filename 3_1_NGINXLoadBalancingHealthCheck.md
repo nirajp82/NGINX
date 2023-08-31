@@ -158,6 +158,21 @@ upstream backend {
 ```
 In the example, backend1.example.com has weight 5; the other two servers have the default weight (1), but the one with IP address 192.0.0.1 is marked as a backup server and does not receive requests unless both of the other servers are unavailable. With this configuration of weights, out of every 6 requests, 5 are sent to backend1.example.com and 1 to backend2.example.com.
 
+-  **max_conns:**  With NGINX Plus, it is possible to limit the number of active connections to an upstream server by specifying the maximum number with the max_conns parameter. If the max_conns limit has been reached, the request is placed in a queue for further processing, provided that the queue directive is also included to set the maximum number of requests that can be simultaneously in the queue:
+
+```nginx
+upstream backend {
+    server backend1.example.com max_conns=3;
+    server backend2.example.com;
+    queue 100 timeout=70;
+}
+```
+
+If the queue is filled up with requests or the upstream server cannot be selected during the timeout specified by the optional timeout parameter, the client receives an error.
+
+Note that the max_conns limit is ignored if there are idle keepalive connections opened in other worker processes. 
+
+### HTTP Health Checks
 - **slow_start:** The server slow‑start feature prevents a recently recovered server from being overwhelmed by connections, which may time out and cause the server to be marked as failed again.
 
   In NGINX Plus, slow‑start allows an upstream server to gradually recover its weight from 0 to its nominal value after it has been recovered or became available. This can be done with the slow_start parameter to the server directive:
@@ -172,12 +187,20 @@ upstream backend {
 
 The time value (here, 30 seconds) sets the time during which NGINX Plus ramps up the number of connections to the server to the full value.
 
-
 Note that if there is only a single server in a group, the max_fails, fail_timeout, and slow_start parameters to the server directive are ignored and the server is never considered unavailable.
 
 -  **max_fails:** Sets the maximum number of consecutive failures allowed before considering a server as unhealthy.
-- **fail_timeout:** Defines the time during which failures are counted.
+-  **fail_timeout:** Defines the time during which failures are counted. It sets the period during which that number of errors or timeouts must occur, as well as how long NGINX waits to try the server again after marking it unhealthy.  (default is 10 seconds).
 
+In the following example, if NGINX fails to send a request to a server or does not receive a response from it 3 times in 30 seconds, it marks the server as unavailable for 30 seconds:
+
+  ```nginx
+upstream backend {
+    server backend1.example.com;
+    server backend2.example.com max_fails=3 fail_timeout=30s;
+}
+  ```
+Note that if there is only a single server in a group, the fail_timeout and max_fails parameters are ignored and the server is never marked unavailable.
 ## 4. Health Checks
 
 ### Active Health Checks (Nginx Plus)
@@ -242,3 +265,6 @@ http {
 
 ---
 
+References:
+
+https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/ 

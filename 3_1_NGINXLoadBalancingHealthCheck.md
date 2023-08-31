@@ -98,6 +98,26 @@ upstream backend {
 }
 ```
 
+### Random:
+
+**Description:**  Each request will be passed to a randomly selected server. If the two parameter is specified, first, NGINX randomly selects two servers taking into account server weights, and then chooses one of these servers using the specified method:
+
+	- least_conn – The least number of active connections
+	- least_time=header (NGINX Plus) – The least average time to receive the response header from the server ($upstream_header_time)
+	- least_time=last_byte (NGINX Plus) – The least average time to receive the full response from the server ($upstream_response_time)
+	
+The Random load balancing method should be used for distributed environments where multiple load balancers are passing requests to the same set of backends. For environments where the load balancer has a full view of all requests, use other load balancing methods, such as round robin, least connections and least time.
+
+```nginx
+upstream backend {
+    random two least_time=last_byte;
+    server backend1.example.com;
+    server backend2.example.com;
+    server backend3.example.com;
+    server backend4.example.com;
+}
+```
+
 
 ## 3. Configuring Load Balancing in Nginx
 
@@ -127,8 +147,35 @@ http {
 
 #### Load Balancing Algorithms Parameters
 
-- **weight:** Assigns a weight to each server, influencing the distribution of requests.
-- **max_fails:** Sets the maximum number of consecutive failures allowed before considering a server as unhealthy.
+- **weight:** Assigns a weight to each server, influencing the distribution of requests. By default, NGINX distributes requests among the servers in the group according to their weights using the Round Robin method. The weight parameter to the server directive sets the weight of a server; the default is 1:
+
+```nginx
+upstream backend {
+    server backend1.example.com weight=5;
+    server backend2.example.com;
+    server 192.0.0.1 backup;
+}
+```
+In the example, backend1.example.com has weight 5; the other two servers have the default weight (1), but the one with IP address 192.0.0.1 is marked as a backup server and does not receive requests unless both of the other servers are unavailable. With this configuration of weights, out of every 6 requests, 5 are sent to backend1.example.com and 1 to backend2.example.com.
+
+- **slow_start:** The server slow‑start feature prevents a recently recovered server from being overwhelmed by connections, which may time out and cause the server to be marked as failed again.
+
+  In NGINX Plus, slow‑start allows an upstream server to gradually recover its weight from 0 to its nominal value after it has been recovered or became available. This can be done with the slow_start parameter to the server directive:
+
+```nginx
+upstream backend {
+    server backend1.example.com slow_start=30s;
+    server backend2.example.com;
+    server 192.0.0.1 backup;
+}
+```
+
+The time value (here, 30 seconds) sets the time during which NGINX Plus ramps up the number of connections to the server to the full value.
+
+
+Note that if there is only a single server in a group, the max_fails, fail_timeout, and slow_start parameters to the server directive are ignored and the server is never considered unavailable.
+
+-  **max_fails:** Sets the maximum number of consecutive failures allowed before considering a server as unhealthy.
 - **fail_timeout:** Defines the time during which failures are counted.
 
 ## 4. Health Checks

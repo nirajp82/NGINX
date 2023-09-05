@@ -40,4 +40,54 @@ The `Cache-Control` HTTP header is used to specify caching directives for how a 
   - **Purpose**: Allows a cached response to be served even after it has exceeded its freshness lifetime (as specified by `max-age` or `s-maxage`) for a certain time period.
   - **Effect**: Clients can use this directive to specify a tolerance for stale content.
 
-These are some common `Cache-Control` directives that allow fine-grained control over how resources are cached and served. The appropriate directive to use depends on your caching requirements and desired behavior for your web application.
+### Example
+Add a `Cache-Control` directive in an NGINX configuration, specifically for CSS and PNG files:
+
+```nginx
+# NGINX Cache-Control Configuration Example
+
+## Overview
+
+This NGINX configuration example demonstrates how to set `Cache-Control` headers for CSS and PNG files to control caching behavior.
+
+## Server Block Configuration
+
+Assuming you have a server block for your domain (e.g., `example.com`), you can add location-specific configurations for CSS and PNG files as follows:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    location ~* \.(css|png)$ {
+        # Cache CSS files for 1 week (604800 seconds) in client browsers
+        # and for 1 day (86400 seconds) in intermediary caches (proxy servers).
+        add_header Cache-Control "max-age=604800, s-maxage=86400, public";
+
+        # Other location configurations...
+    }
+
+    # Other server configurations...
+}
+```
+
+## Explanation
+
+- `location ~* \.(css|png)$` matches URLs that end with `.css` or `.png`, making it suitable for CSS and PNG files.
+  
+- The `~*` in the NGINX configuration is a regular expression modifier that makes the pattern matching case-insensitive.
+   - `~`: Case-sensitive regular expression match.
+   - `~*`: Case-insensitive regular expression match.
+ 
+   This location block will match URLs that end with .jpg or .png regardless of whether the file extension is in uppercase or lowercase. So, it would match URLs like image.jpg, IMAGE.PNG, file.JpG, and so on.
+
+- `max-age=604800` specifies that CSS and PNG files can be cached by client browsers for a maximum of 1 week (604800 seconds).
+
+- `s-maxage=86400` specifies that intermediary caches (such as proxy servers) can cache CSS and PNG files for a maximum of 1 day (86400 seconds).
+
+- `public` indicates that both client browsers and intermediary caches are allowed to cache these files.
+
+This configuration allows you to control the caching behavior for CSS and PNG files, ensuring that they are cached efficiently both in client browsers and intermediary caches.
+```
+
+Please note that you should adapt this configuration to your specific NGINX setup and requirements, including the file extensions and cache durations you want to apply to your CSS and PNG files.

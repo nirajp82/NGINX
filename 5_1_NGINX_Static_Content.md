@@ -1,4 +1,4 @@
-Certainly! To configure Nginx as a reverse proxy that serves static assets when available and forwards requests to a backend server for static content when not found on the Nginx server, follow these steps:
+To configure Nginx as a reverse proxy that serves static assets when available and forwards requests to a backend server for static content when not found on the Nginx server, follow these steps:
 
 **Nginx Configuration Example:**
 

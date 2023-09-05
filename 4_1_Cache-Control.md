@@ -88,6 +88,5 @@ server {
 - `public` indicates that both client browsers and intermediary caches are allowed to cache these files.
 
 This configuration allows you to control the caching behavior for CSS and PNG files, ensuring that they are cached efficiently both in client browsers and intermediary caches.
-```
 
-Please note that you should adapt this configuration to your specific NGINX setup and requirements, including the file extensions and cache durations you want to apply to your CSS and PNG files.
+

@@ -27,8 +27,8 @@ http {
     default_type        application/octet-stream;
 
     upstream backend {
-        server 172.31.47.84 max_fails=1 fail_timeout=10s;
-        server 172.31.38.222 max_fails=1 fail_timeout=10s;
+        server 123.45.77.123 max_fails=1 fail_timeout=10s;
+        server 123.45.67.222 max_fails=1 fail_timeout=10s;
     }	
 	
 	server {                                              	

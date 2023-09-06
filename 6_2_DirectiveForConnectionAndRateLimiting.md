@@ -84,3 +84,5 @@ location /download/ {
 ```
 
 In this example, Nginx allows the client to receive 1 MB of data at full speed before applying the rate limit of 50 KB/s for requests to the `/download/` location.
+
+https://github.com/nirajp82/NGINX/blob/main/Config/conn_rate_limit.conf.md 

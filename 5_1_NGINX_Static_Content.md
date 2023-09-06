@@ -5,15 +5,17 @@ To configure Nginx as a reverse proxy that serves static assets when available a
 ```nginx
 server {
     listen 80;
-    server_name your_domain.com;
-
-    # Define the root directory for serving static assets
-    root /var/www/static;
+    server_name your_domain.com;    
 
     # Location block for serving static assets directly
-    location /static/ {
-        # Serve static files from Nginx server if found
-        try_files $uri @backend;
+    location ~* \.(css|js|jpe?g|png)$ {
+          # Define the root directory for serving static assets
+          root /var/www/static;
+
+         expires 7d;  # Optional: Add caching headers for performance
+
+          # Try to serve static assets from Nginx, and if not found, forward to the backend
+         try_files $uri $uri/ @backend;
     }
 
     # Location block for proxying requests to the backend server
@@ -77,12 +79,19 @@ server {
 ### 4. Configure Static Asset Handling
 
 - Create a location block for handling static assets. This block tells Nginx to serve static files from the Nginx server if found. If not found, it forwards the request to the backend server.
+- The location ~* \.(css|js|jpe?g|png)$ block uses a regular expression with the ~* modifier to make the match case-insensitive (css, CSS, jpg, JPG, etc., will all match).
+- The expires directive is optional but can be used to add caching headers for improved performance.
 
 ```nginx
     # Location block for serving static assets and proxying to the backend if not found
-    location /static/ {
-        # Try to serve static files from the Nginx server
-        try_files $uri @backend;
+     location ~* \.(css|js|jpe?g|png)$ {
+          # Define the root directory for serving static assets
+          root /var/www/static;
+
+         expires 7d;  # Optional: Add caching headers for performance
+
+          # Try to serve static assets from Nginx, and if not found, forward to the backend
+         try_files $uri $uri/ @backend;
     }
 ```
 

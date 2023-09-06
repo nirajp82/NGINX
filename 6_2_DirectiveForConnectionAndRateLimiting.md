@@ -36,7 +36,7 @@ http {
 }
 ```
 
-#### limit_conn_zone
+#### limit_conn_zone:
 The `limit_conn_zone` directive in Nginx is used to define a shared memory zone that tracks connection counts. It is typically used in conjunction with the `limit_conn` directive to control the maximum number of simultaneous connections from specific IP addresses to a location or server block. Let's elaborate on the `limit_conn_zone` directive, focusing on the following example:
 
 ```nginx

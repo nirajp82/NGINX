@@ -34,8 +34,9 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `--user=nginx` and `--group=nginx`: Specifies the user and group under which Nginx worker process will run. We will create this user later
    - `--with-http_mp4_module`: Enables the MP4 module for serving MP4 video files.
   
-11. make
-12. 
+11. `make`: Compile and build the Nginx software from its source code.
+    
+12. `make install`: Install the compiled software onto your Linux system, making it ready for use as a web server. These commands are essential for the process of building and deploying software on a Linux system.
 
 
 

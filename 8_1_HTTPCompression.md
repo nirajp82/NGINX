@@ -43,7 +43,7 @@ By reducing the data size, compression decreases the number of packets needed, w
 
 ## 3. Compression in the HTTP Request 
 
-![HTTP Request Lifecycle with Compression](https://bunnyacademy.b-cdn.net/B2OG3-What-Is-HTTP-Compression-and-how-does-it-help-your-site.png)
+https://camo.githubusercontent.com/29c34957bbb2fd5af47cd20ccbc51a04be145c3bc9bc7d90a7e6e47097fb1b3d/68747470733a2f2f62756e6e7961636164656d792e622d63646e2e6e65742f42324f47332d576861742d49732d485454502d436f6d7072657373696f6e2d616e642d686f772d646f65732d69742d68656c702d796f75722d736974652e706e67 
 
 - File compression using HTTP compression algorithms has to be performed by the web server. Popular HTTP server software such as Apache and Nginx support most, if not all, compression algorithms out of the box. When requesting content from a web server, your browser can inform the web server through the HTTP request header that it accepts compressed information by including another line like this:
   `Accept-Encoding: gzip, deflate, br`

@@ -4,7 +4,7 @@ The provided command sequence is used to compile and install the Nginx web serve
 
 2. `wget http://nginx.org/download/nginx-1.24.0.tar.gz`: This command uses the `wget` utility to download the Nginx source code archive from the specified URL ([http://nginx.org/download/nginx-1.24.0.tar.gz](http://nginx.org/download/nginx-1.24.0.tar.gz)) and save it to the current directory.
 
-3. `tar -xzvf nginx-1.16.0.tar.gz`: This command extracts the contents of the downloaded archive using `tar`. The options `-xzvf` stand for:
+3. `tar -xzvf nginx-1.24.0.tar.gz`: This command extracts the contents of the downloaded archive using `tar`. The options `-xzvf` stand for:
    - `-x`: Extract files from the archive.
    - `-z`: Decompress the archive if it's compressed with gzip.
    - `-v`: Verbose mode to display progress.

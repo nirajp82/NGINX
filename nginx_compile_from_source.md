@@ -24,7 +24,7 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `--with-http_mp4_module`: Enables the MP4 module for serving MP4 video files.
    - `--add-module=../nginx-hello-world-module`: Adds a custom module located in the parent directory.
 
-5. `useradd Nginx`: This command creates a system user named "Nginx." This user will likely be used to run the Nginx server process.
+5. `useradd nginx`: This command creates a system user named "nginx." This user will likely be used to run the Nginx server process.
 
 6. `mkdir -p /var/lib/nginx/tmp/`: This command creates the `/var/lib/nginx/tmp/` directory, which was previously specified as the temporary directory for storing client request bodies in the configure step.
 

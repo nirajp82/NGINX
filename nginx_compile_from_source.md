@@ -10,7 +10,7 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `-v`: Verbose mode to display progress.
    - `-f`: Specifies the input file (nginx-1.24.0.tar.gz in this case).
 
-4. `./configure ...`: This command configures the Nginx build process with various options. Let's break down the important options:
+4. `./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-module=../nginx-hello-world-module`: This command configures the Nginx build process with various options. Let's break down the important options:
    - `--prefix=/usr/share/nginx`: Specifies the installation directory prefix.
    - `--sbin-path=/usr/sbin/nginx`: Sets the path for the Nginx binary executable.
    - `--modules-path=/usr/lib64/nginx/modules`: Defines the directory for Nginx modules.

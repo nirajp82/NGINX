@@ -8,7 +8,7 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `-x`: Extract files from the archive.
    - `-z`: Decompress the archive if it's compressed with gzip.
    - `-v`: Verbose mode to display progress.
-   - `-f`: Specifies the input file (nginx-1.16.0.tar.gz in this case).
+   - `-f`: Specifies the input file (nginx-1.24.0.tar.gz in this case).
 
 4. `./configure ...`: This command configures the Nginx build process with various options. Let's break down the important options:
    - `--prefix=/usr/share/nginx`: Specifies the installation directory prefix.

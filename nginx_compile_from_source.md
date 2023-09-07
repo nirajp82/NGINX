@@ -10,7 +10,13 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `-v`: Verbose mode to display progress.
    - `-f`: Specifies the input file (nginx-1.24.0.tar.gz in this case).
 
-4. `./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-module=../nginx-hello-world-module`: This command configures the Nginx build process with various options. Let's break down the important options:
+4. `useradd nginx`: This command creates a system user named "nginx." This user will likely be used to run the Nginx server process.
+
+5. `mkdir -p /var/lib/nginx/tmp/`: This command creates the `/var/lib/nginx/tmp/` directory, which was previously specified as the temporary directory for storing client request bodies in the configure step.
+
+6. `chown -R nginx.nginx /var/lib/nginx/tmp/`: This command changes the ownership of the `/var/lib/nginx/tmp/` directory and its contents to the "nginx" user and group. This is necessary to ensure that Nginx can write to this directory for temporary storage.
+   
+7. `./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-module=../nginx-hello-world-module`: This command configures the Nginx build process with various options. Let's break down the important options:
    - `--prefix=/usr/share/nginx`: Specifies the installation directory prefix.
    - `--sbin-path=/usr/sbin/nginx`: Sets the path for the Nginx binary executable.
    - `--modules-path=/usr/lib64/nginx/modules`: Defines the directory for Nginx modules.
@@ -24,10 +30,6 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `--with-http_mp4_module`: Enables the MP4 module for serving MP4 video files.
    - `--add-module=../nginx-hello-world-module`: Adds a custom module located in the parent directory.
 
-5. `useradd nginx`: This command creates a system user named "nginx." This user will likely be used to run the Nginx server process.
 
-6. `mkdir -p /var/lib/nginx/tmp/`: This command creates the `/var/lib/nginx/tmp/` directory, which was previously specified as the temporary directory for storing client request bodies in the configure step.
-
-7. `chown -R nginx.nginx /var/lib/nginx/tmp/`: This command changes the ownership of the `/var/lib/nginx/tmp/` directory and its contents to the "nginx" user and group. This is necessary to ensure that Nginx can write to this directory for temporary storage.
 
 After executing these commands, you should have Nginx compiled and configured on your system, ready to be started with the `nginx` command.

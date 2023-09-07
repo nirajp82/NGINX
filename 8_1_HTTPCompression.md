@@ -45,10 +45,10 @@ By reducing the data size, compression decreases the number of packets needed, w
 ![HTTP Request Lifecycle with Compression](https://bunnyacademy.b-cdn.net/B2OG3-What-Is-HTTP-Compression-and-how-does-it-help-your-site.png)
 
 - File compression using HTTP compression algorithms has to be performed by the web server. Popular HTTP server software such as Apache and Nginx support most, if not all, compression algorithms out of the box. When requesting content from a web server, your browser can inform the web server through the HTTP request header that it accepts compressed information by including another line like this:
-- Accept-Encoding: gzip, deflate, br
+  `Accept-Encoding: gzip, deflate, br`
 - The request header information above tells the web server that the browser can accept content compressed with either Gzip, DEFLATE, or Brotli.
 - If HTTP compression is enabled on the web server, the web server will return a compressed version of the requested files. In the HTTP response header back to the browser, the web server will inform the browser the type of encoding that has been used using a line like this:
-- Content-Encoding: br
+`Content-Encoding: br`
 - The response header above tells the browser that the web server has sent back content compressed with the Brotli algorithm. The browser then knows to decompress the content back to its original state using the Brotli algorithm.
 - The entire compression and decompression processes happens very quickly in the background without you noticing them at all.
 
@@ -75,6 +75,9 @@ To enable compression in Nginx, you can use the `gzip` and `brotli` directives i
 - Monitor server performance when enabling compression to ensure it doesn't put too much strain on the server.
 
 - Use appropriate cache settings to avoid recompressing content for each request.
+
+
+  References: https://bunny.net/academy/http/what-is-http-compression/
 
 - Test your website's performance with and without compression to evaluate its impact on load times and user experience.
 

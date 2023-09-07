@@ -38,6 +38,51 @@ The provided command sequence is used to compile and install the Nginx web serve
     
 12. `make install`: Install the compiled software onto your Linux system, making it ready for use as a web server. These commands are essential for the process of building and deploying software on a Linux system.
 
+13. Manage the Nginx web server as a system service.
+
+    https://www.nginx.com/resources/wiki/start/topics/examples/systemd/
+    
+    `vim /lib/systemd/system/nginx.service`
+
+    The file `/lib/systemd/system/nginx.service` is a systemd service unit file for the Nginx web server. This file is used by the systemd init system to manage the Nginx service, including starting, stopping, restarting, and managing its behavior.
+
+Here's an overview of the purpose and contents of the `nginx.service` file:
+   - The `nginx.service` file contains configuration directives that specify how systemd should interact with the Nginx service. Below is a simplified example of what you might find in this file:
+
+   ```ini
+   [Unit]
+    Description=The NGINX HTTP and reverse proxy server
+    After=syslog.target network-online.target remote-fs.target nss-lookup.target
+    Wants=network-online.target
+    
+    [Service]
+    Type=forking
+    PIDFile=/run/nginx.pid
+    ExecStartPre=/usr/sbin/nginx -t
+    ExecStart=/usr/sbin/nginx
+    ExecReload=/usr/sbin/nginx -s reload
+    ExecStop=/bin/kill -s QUIT $MAINPID
+    PrivateTmp=true
+    
+    [Install]
+    WantedBy=multi-user.target
+   ```
+
+   Here's what some of the key directives mean:
+   - `Description`: A human-readable description of the service.
+   - `Type`: Defines the process startup type. "forking" is used when the service forks itself into the background (common for Nginx).
+   - `ExecStartPre` and `ExecStart`: Commands to start the Nginx service and verify its configuration.
+   - `ExecReload`: Command to reload the Nginx configuration.
+   - `KillSignal`: The signal used to stop the Nginx service (default is SIGQUIT).
+   - `TimeoutStopSec`: Maximum time to wait for the service to stop gracefully.
+   - `KillMode`: How to kill processes when stopping the service.
+   - `PrivateTmp`: Creates a private /tmp directory for the service to isolate it from other processes.
+
+   - systemd uses this file to control the Nginx service. You can use standard systemd commands like `systemctl start nginx`, `systemctl stop nginx`, `systemctl restart nginx`, and `systemctl status nginx` to manage the Nginx service based on the configuration in this unit file.
+
+In summary, the `/lib/systemd/system/nginx.service` file is essential for systemd to manage the Nginx web server as a system service. It specifies how Nginx should be started, stopped, and reloaded, among other service management tasks.
+    
+
 
 
 After executing these commands, you should have Nginx compiled and configured on your system, ready to be started with the `nginx` command.

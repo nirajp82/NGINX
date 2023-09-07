@@ -20,7 +20,7 @@ The provided command sequence is used to compile and install the Nginx web serve
    - `--http-client-body-temp-path=/var/lib/nginx/tmp/client_body`: Specifies the temporary directory for storing client request bodies.
    - `--pid-path=/var/run/nginx.pid`: Defines the PID file path.
    - `--lock-path=/var/lock/subsys/nginx`: Sets the path for the lock file.
-   - `--user=nginx` and `--group=nginx`: Specifies the user and group under which Nginx will run.
+   - `--user=nginx` and `--group=nginx`: Specifies the user and group under which Nginx worker process will run. We will create this user later
    - `--with-http_mp4_module`: Enables the MP4 module for serving MP4 video files.
    - `--add-module=../nginx-hello-world-module`: Adds a custom module located in the parent directory.
 

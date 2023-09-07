@@ -2,7 +2,7 @@ The provided command sequence is used to compile and install the Nginx web serve
  
 1. `yum -y install gcc make zlib-devel pcre-devel openssl-devel wget nano`: This command uses the `yum` package manager to install various development and utility packages that are required for compiling Nginx. The `-y` flag is used to automatically answer "yes" to any prompts during the installation.
 
-2. `wget http://nginx.org/download/nginx-1.24.0.tar.gz`: This command uses the `wget` utility to download the Nginx source code archive from the specified URL (http://nginx.org/download/nginx-1.16.0.tar.gz) and save it to the current directory.
+2. `wget http://nginx.org/download/nginx-1.24.0.tar.gz`: This command uses the `wget` utility to download the Nginx source code archive from the specified URL ([http://nginx.org/download/nginx-1.24.0.tar.gz](http://nginx.org/download/nginx-1.24.0.tar.gz)) and save it to the current directory.
 
 3. `tar -xzvf nginx-1.16.0.tar.gz`: This command extracts the contents of the downloaded archive using `tar`. The options `-xzvf` stand for:
    - `-x`: Extract files from the archive.

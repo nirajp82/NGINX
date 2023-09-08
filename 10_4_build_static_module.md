@@ -30,10 +30,12 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
    - `git clone https://github.com/perusio/nginx-hello-world-module.git`
   
 3. Build static Module
-   - `./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-module=nginx-hello-world-module`
-     make sure configure command finish successfully without any issue, else you will receive an error when running `make modules` command such as  `make: *** No rule to make target 'modules'.  Stop.`
+   - ```sh
+     ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-module=../nginx-hello-world-module
+     ```
+     make sure configure command finish successfully without any issue, else you will receive an error when running `make` command such as  `make: *** No rule to make target 'build', needed by 'default'.  Stop.`
      
-   - `make modules`
+   - `make`
   
    - View installed module in objs folder `cd objs/`
   

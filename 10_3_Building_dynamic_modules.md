@@ -32,8 +32,28 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
         cp ~/nginx-1.24.0/objs/ngx_http_hello_world_module.so /etc/nginx/modules/
      
      ```
-   - 
-4. Reference module path within NGINX configuration. 
+     
+4. Reference module path within NGINX configuration.
+      ```sh
+         # Open the nginx config file
+         cd /etc/nginx/
+         vim nginx.conf
+
+         #Load module (Load module should be outside http section)         
+      ```
+      ```nginx
+           ...
+           load_module /etc/nginx/modules/ngx_http_hello_world_module.so;  
+                                                               
+           events {                                                         
+                      worker_connections  1024;                                    
+            }                                                                
+                                                                 
+            http {                                                           
+                include       mime.types;
+               ...
+      ```
+      `nginx -t`
 
 **Step 1: Prerequisites**
 

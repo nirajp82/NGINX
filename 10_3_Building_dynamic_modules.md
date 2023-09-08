@@ -78,6 +78,7 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
 
       Test the Nginx configuration for syntax errors and validity
       `nginx -t`
+      `curl http://127.0.0.1:8080`
 
 **Step 1: Prerequisites**
 

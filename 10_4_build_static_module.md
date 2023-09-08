@@ -50,17 +50,13 @@ configure arguments: --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --mod
          # Open the nginx config file
          cd /etc/nginx/
          vim nginx.conf
-
       ```
       ```nginx
-          # ...
-            load_module /etc/nginx/modules/ngx_http_hello_world_module.so;
-            
+          # ...                       
             events {
                 worker_connections  1024;
             }
-            
-            
+                        
             http {
                 include       mime.types;
                 default_type  application/octet-stream;

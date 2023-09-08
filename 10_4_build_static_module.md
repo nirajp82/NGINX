@@ -38,22 +38,19 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
    - `make`
    - `make install`
   
-   - View installed module in objs folder `cd objs/`
-  
-   - copy the installed modules to nginx dir.
-     ```sh
-        mkdir /etc/nginx/modules/
-        cp ~/nginx-1.24.0/objs/ngx_http_hello_world_module.so /etc/nginx/modules/
-     
-     ```
-     
+   - if you run the `nginx -V` command you will see the hello world moudule is compiled. (--add-module=../nginx-hello-world-module)
+     `
+     nginx version: nginx/1.24.0
+built by gcc 11.3.1 20221121 (Red Hat 11.3.1-4) (GCC)
+configure arguments: --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --add-module=../nginx-hello-world-module
+     `
+      
 4. Reference module path within NGINX configuration.
       ```sh
          # Open the nginx config file
          cd /etc/nginx/
          vim nginx.conf
 
-         #Load module (Load module should be outside http section)         
       ```
       ```nginx
           # ...

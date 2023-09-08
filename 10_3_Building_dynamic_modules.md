@@ -4,6 +4,7 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
    
 2. Fetch the module source
    - `yum -y install git`
+   - Go to nginx dir. `cd nginx-1.24.0/`
    - `git clone https://github.com/perusio/nginx-hello-world-module.git`
   
 3. Build Dynamic Module

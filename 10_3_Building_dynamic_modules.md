@@ -53,6 +53,8 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
                 include       mime.types;
                ...
       ```
+
+      Test the Nginx configuration for syntax errors and validity
       `nginx -t`
 
 **Step 1: Prerequisites**

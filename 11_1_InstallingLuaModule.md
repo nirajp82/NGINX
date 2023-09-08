@@ -14,9 +14,15 @@ Build the source with this module:
 
 ```sh
  
- wget 'https://openresty.org/download/nginx-1.19.3.tar.gz'
- tar -xzvf nginx-1.19.3.tar.gz
- cd nginx-1.19.3/
+   yum -y install gcc make zlib-devel pcre-devel openssl-devel wget nano
+   cd ~
+   sudo su
+   wget http://nginx.org/download/nginx-1.24.0.tar.gz
+   tar -xzvf nginx-1.24.0.tar.gz
+   useradd nginx # (Optional)
+   mkdir -p /var/lib/nginx/tmp/  # (Optional)
+   chown -R nginx.nginx /var/lib/nginx/tmp/ # (Optional)
+   cd nginx-1.24.0/
 
  # tell nginx's build system where to find LuaJIT 2.0:
  export LUAJIT_LIB=/path/to/luajit/lib

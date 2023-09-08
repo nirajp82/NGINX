@@ -36,6 +36,7 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
      make sure configure command finish successfully without any issue, else you will receive an error when running `make` command such as  `make: *** No rule to make target 'build', needed by 'default'.  Stop.`
      
    - `make`
+   - `make install`
   
    - View installed module in objs folder `cd objs/`
   

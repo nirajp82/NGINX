@@ -1,5 +1,16 @@
 Building dynamic modules in Nginx involves several steps. I'll provide you with a general outline of the process and include an example of building a simple Nginx dynamic module.
 
+```sh
+  #Remove NGINX if exist for test only. 
+   systemctl stop nginx
+   rm -rf ~/nginx-1.24.0
+   rm -rf /etc/nginx
+   rm -f /user/sbin/nginx
+   rm /lib/systemd/system/nginx.service
+   systemctl disable nginx
+ 
+```
+
 1. Fetch the NGINX Source (Same as NGINX Production Version)
    ```sh
       yum -y install gcc make zlib-devel pcre-devel openssl-devel wget nano

@@ -12,6 +12,8 @@ Download the latest version of the lua-resty-core HERE
 Download the latest version of the lua-resty-lrucache HERE
 Build the source with this module:
 
+```sh
+ 
  wget 'https://openresty.org/download/nginx-1.19.3.tar.gz'
  tar -xzvf nginx-1.19.3.tar.gz
  cd nginx-1.19.3/
@@ -50,16 +52,6 @@ Build the source with this module:
  # add necessary `lua_package_path` directive to `nginx.conf`, in the http context
 
  lua_package_path "/opt/nginx/lib/lua/?.lua;;";
-
-Ensure that the Lua module is included in your NGINX installation. You can check this by running `nginx -V`, and it should include `--with-http_lua_module`.
-
-**Step 2: Create a Lua Script**
-
-Write the Lua script that you want to execute within your NGINX configuration. Save this script to a location on your server. For example, create a file named `my_lua_script.lua`:
-
-```lua
--- my_lua_script.lua
-ngx.say("Hello from NGINX Lua!")
 ```
 
 This simple script just prints "Hello from NGINX Lua!".

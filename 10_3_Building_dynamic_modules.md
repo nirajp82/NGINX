@@ -7,7 +7,18 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
    - `git clone https://github.com/perusio/nginx-hello-world-module.git`
   
 3. Build Dynamic Module
-   - `./configure --add-dynamic-module=../nginx-hello-world-module`
+   - `./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-dynamic-module=../nginx-hello-world-module/`
+     
+   - `make modules`
+  
+   - View installed module in objs folder `cd objs/`
+  
+   - copy the installed modules to nginx dir.
+     ```sh
+        mkdir /etc/nginx/modules/
+        cp ngx_http_hello_world_module.so /etc/nginx`
+     ```
+   - 
 5. Reference module path within NGINX configuration. 
 
 **Step 1: Prerequisites**

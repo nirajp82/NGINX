@@ -1,6 +1,17 @@
 Building dynamic modules in Nginx involves several steps. I'll provide you with a general outline of the process and include an example of building a simple Nginx dynamic module.
 
 1. Fetch the NGINX Source (Same as NGINX Production Version)
+   ```sh
+      yum -y install gcc make zlib-devel pcre-devel openssl-devel wget nano
+      cd ~
+      sudo su
+      wget http://nginx.org/download/nginx-1.24.0.tar.gz
+      tar -xzvf nginx-1.24.0.tar.gz
+      useradd nginx # (Optional)
+      mkdir -p /var/lib/nginx/tmp/  # (Optional)
+      chown -R nginx.nginx /var/lib/nginx/tmp/ # (Optional)
+      cd nginx-1.24.0/
+   ```
    
 2. Fetch the module source
    - `yum -y install git`
@@ -22,7 +33,7 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
      
      ```
    - 
-5. Reference module path within NGINX configuration. 
+4. Reference module path within NGINX configuration. 
 
 **Step 1: Prerequisites**
 

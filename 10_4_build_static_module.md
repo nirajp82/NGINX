@@ -31,7 +31,11 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
   
 3. Build static Module
    - ```sh
-     ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --add-module=../nginx-hello-world-module
+     ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules
+     --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log
+     --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx
+     --user=nginx --group=nginx --with-http_mp4_module
+     --add-module=../nginx-hello-world-module
      ```
      make sure configure command finish successfully without any issue, else you will receive an error when running `make` command such as  `make: *** No rule to make target 'build', needed by 'default'.  Stop.`
      
@@ -74,6 +78,7 @@ configure arguments: --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --mod
 
       Test the Nginx configuration for syntax errors and validity
       `nginx -t`
+      `curl http://127.0.0.1:8080`
 
 **Step 1: Prerequisites**
 

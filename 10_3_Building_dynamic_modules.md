@@ -42,16 +42,27 @@ Building dynamic modules in Nginx involves several steps. I'll provide you with 
          #Load module (Load module should be outside http section)         
       ```
       ```nginx
-           ...
-           load_module /etc/nginx/modules/ngx_http_hello_world_module.so;  
-                                                               
-           events {                                                         
-                      worker_connections  1024;                                    
-            }                                                                
-                                                                 
-            http {                                                           
+          # ...
+            load_module /etc/nginx/modules/ngx_http_hello_world_module.so;
+            
+            events {
+                worker_connections  1024;
+            }
+            
+            
+            http {
                 include       mime.types;
-               ...
+                default_type  application/octet-stream;
+            	# ...
+                server {
+                        listen 8080;
+                      location / {
+                            hello_world;
+                      }
+                }
+            	# ...
+            
+            # ...
       ```
 
       Test the Nginx configuration for syntax errors and validity

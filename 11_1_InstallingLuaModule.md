@@ -45,7 +45,12 @@ wget https://github.com/openresty/lua-nginx-module/archive/refs/tags/v0.10.25.ta
 tar -xzvf lua-nginx-module.tar.gz
 
 # Configure and install NGINX with ngx_devel_kit and lua-nginx-module
-./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module --with-ld-opt="-Wl,-rpath,/usr/local/lib" --add-module=/x_np_nginx/nginx-1.19.3/x_np_modules/ngx_devel_kit-0.3.2 --add-module=/x_np_nginx/nginx-1.19.3/x_np_modules/lua-nginx-module-0.10.25
+./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log \
+--http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx \
+--user=nginx --group=nginx --with-http_mp4_module \
+--with-ld-opt="-Wl,-rpath,/usr/local/lib" \
+--add-module=/x_np_nginx/nginx-1.19.3/x_np_modules/ngx_devel_kit-0.3.2 \
+--add-module=/x_np_nginx/nginx-1.19.3/x_np_modules/lua-nginx-module-0.10.25 ;
 
 make
 sudo make install

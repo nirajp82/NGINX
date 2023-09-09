@@ -1,5 +1,6 @@
 Using the NGINX Lua module allows you to extend NGINX's functionality by embedding Lua scripts directly into your NGINX configuration. This can be useful for tasks like authentication, URL rewriting, or dynamic content generation. Here's a step-by-step guide on how to use the NGINX Lua module:
 
+```nginx
 # Change to the root directory
 cd /
 
@@ -68,3 +69,4 @@ make install PREFIX=/usr/share/nginx
 # Add necessary lua_package_path directive to nginx.conf, in the http context
 lua_package_path "/usr/share/nginx/lib/lua/?.lua;;";
 
+```

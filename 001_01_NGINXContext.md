@@ -89,7 +89,8 @@ Within the server context, you can use directives to configure various aspects o
 * Redirecting or rewriting URLs.
 * Configuring proxying to backend servers.
 
-## If Context: The if context allows you to add conditional statements to your configuration. It's important to note that the use of if directives should be minimized because they can be complex and potentially lead to unexpected behavior.
+## If Context: 
+The if context allows you to add conditional statements to your configuration. It's important to note that the use of if directives should be minimized because they can be complex and potentially lead to unexpected behavior.
 
 Example:
 

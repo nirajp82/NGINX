@@ -89,6 +89,16 @@ Within the server context, you can use directives to configure various aspects o
 * Redirecting or rewriting URLs.
 * Configuring proxying to backend servers.
 
+## If Context: The if context allows you to add conditional statements to your configuration. It's important to note that the use of if directives should be minimized because they can be complex and potentially lead to unexpected behavior.
+
+Example:
+
+```nginx
+if ($request_uri ~* ^/admin) {
+    # Configuration for requests matching the condition
+}
+```
+
 The server context allows you to customize the behavior of your NGINX server for different domains or IP addresses, making it possible to host multiple websites or applications on the same server with distinct configurations.
 
 

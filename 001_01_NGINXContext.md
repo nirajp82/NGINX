@@ -200,7 +200,7 @@ http {
     # Additional server blocks for virtual hosts can be added here
 
 }
-
+```
 
 
 

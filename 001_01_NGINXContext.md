@@ -10,11 +10,11 @@ Because contexts can be layered within one another, Nginx allows configurations 
 
 Directives can only be used in the contexts that they were designed for. Nginx will throw an error when reading a configuration file with directives that are declared in the wrong context. 
 
-## The Core Contexts
+# The Core Contexts
 In NGINX, the term "context" refers to different configuration blocks or sections within the NGINX configuration file where you define various directives to configure the behavior of the server. These contexts help organize and separate different types of configuration settings, making it easier to manage and customize the server's behavior for different scenarios.
 
 
-### The Main Context
+## The Main Context
 The most general context is the “main” or “global” context. It is the only context that is not contained within the typical context blocks that look like this:
 
 ![image](https://github.com/nirajp82/NGINX/assets/61636643/a50fa75f-2a0b-4a86-ad9a-8fdc0c6697f8)
@@ -24,6 +24,8 @@ Any directive that exists entirely outside of these blocks belongs to the “mai
 The main context represents the broadest environment for Nginx configuration. It is used to configure details that affect the entire application. While the directives in this section affect the lower contexts, many of these cannot be overridden in lower levels.
 
 Some common details that are configured in the main context are the system user and group to run the worker processes as, the number of workers, and the file to save the main Nginx process’s ID. The default error file for the entire application can be set at this level (this can be overridden in more specific contexts).
+
+The main context (outermost block) and the HTTP context (within the http block) are executed at the start of NGINX when it is initially loaded or restarted. These contexts contain global and server-wide settings that apply to the entire server. 
 
 ## The Events Context
 The “events” context is contained within the “main” context. It is used to set global options that affect how Nginx handles connections at a general level. There can only be a single events context defined within the Nginx configuration.
@@ -61,6 +63,8 @@ Within the http context, you can use various directives to configure aspects of 
 
 This context includes directives that affect how the server handles HTTP requests, such as defining server blocks, setting up proxying, configuring SSL, enabling compression, and more.
 
+The HTTP context (within the http block) (Also main context - outermost block) are executed at the start of NGINX when it is initially loaded or restarted. These contexts contain global and server-wide settings that apply to the entire server.
+
 ## The Server Context
 Within the http context, you can have multiple server blocks. Each server block represents a virtual server that handles requests for a specific domain or IP address. Inside the server context, you can define directives that are specific to that virtual server, such as listen ports, server_name, SSL settings, and request handling rules.
 
@@ -89,6 +93,20 @@ Within the server context, you can use directives to configure various aspects o
 * Redirecting or rewriting URLs.
 * Configuring proxying to backend servers.
 
+  The server context (within the http block) is executed when the server receives a request that matches the server_name directive in that context. If multiple virtual hosts are defined, NGINX selects the appropriate server block based on the request's hostname.
+
+## Location Context: 
+The location context allows you to specify configuration settings for specific URL paths within a server block. You can use location blocks to define how NGINX should handle requests to different URLs, including proxying requests to backend servers, serving static files, and applying access controls.
+
+```nginx
+location /static/ {
+    alias /var/www/static/;
+}
+```
+
+The location context (within a server block) is executed for each request that matches the location pattern defined in that context. These context-specific settings apply to specific URL paths or patterns and are executed independently for each matching request.
+
+
 ## If Context: 
 The if context allows you to add conditional statements to your configuration. It's important to note that the use of if directives should be minimized because they can be complex and potentially lead to unexpected behavior.
 
@@ -104,6 +122,83 @@ The server context allows you to customize the behavior of your NGINX server for
 
 
 
+# This is a sample NGINX configuration file with comments
+
+# Set the user and group that NGINX should run as (best practice is to create a dedicated nginx user)
+user nginx;
+
+# Automatically detect the number of CPU cores for worker processes
+worker_processes auto;
+
+# Error log location
+error_log /var/log/nginx/error.log;
+
+# Access log location
+access_log /var/log/nginx/access.log;
+
+# PID file for NGINX process
+pid /var/run/nginx/nginx.pid;
+
+# Include additional configuration files from the /etc/nginx/conf.d directory
+include /etc/nginx/conf.d/*.conf;
+
+# Events block defines event-driven settings
+events {
+    # Number of worker connections per worker process
+    worker_connections 1024;
+
+    # Enable multiple connections per worker process for performance
+    multi_accept on;
+}
+
+# HTTP block contains server-wide HTTP settings
+http {
+    # Include common MIME types
+    include mime.types;
+
+    # Default MIME type
+    default_type application/octet-stream;
+
+    # Enable GZIP compression for supported content types
+    gzip on;
+    gzip_comp_level 6;
+    gzip_min_length 1000;
+    gzip_types text/plain text/css application/json application/javascript application/xml;
+
+    # Security headers
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options SAMEORIGIN;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # Server block defines server-specific settings
+    server {
+        # Listen on port 80 for HTTP traffic
+        listen 80;
+
+        # Server name (replace with your domain name)
+        server_name example.com;
+
+        # Define location blocks for handling requests
+        location / {
+            # Root directory for serving static content
+            root /var/www/html;
+
+            # Default index files
+            index index.html index.htm;
+        }
+
+        # Redirect HTTP to HTTPS (if using SSL)
+        # return 301 https://$host$request_uri;
+
+        # SSL configuration (if using HTTPS)
+        # listen 443 ssl;
+        # ssl_certificate /etc/nginx/ssl/server.crt;
+        # ssl_certificate_key /etc/nginx/ssl/server.key;
+    }
+
+    # Additional server blocks for virtual hosts can be added here
+
+}
 
 
 

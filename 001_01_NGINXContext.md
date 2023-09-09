@@ -122,7 +122,8 @@ The server context allows you to customize the behavior of your NGINX server for
 
 
 
-# This is a sample NGINX configuration file with comments
+```nginx
+# Sample NGINX configuration file with comments
 
 # Set the user and group that NGINX should run as (best practice is to create a dedicated nginx user)
 user nginx;

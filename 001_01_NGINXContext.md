@@ -1,4 +1,4 @@
-# Nginx Configuration Contexts
+## Nginx Configuration Contexts
 
 Nginx is a high performance web server that is responsible for handling the load of some of the largest sites on the internet. It is especially good at handling many concurrent connections and excels at forwarding or serving static content. 
 
@@ -10,11 +10,11 @@ Because contexts can be layered within one another, Nginx allows configurations 
 
 Directives can only be used in the contexts that they were designed for. Nginx will throw an error when reading a configuration file with directives that are declared in the wrong context. 
 
-# The Core Contexts
+## The Core Contexts
 In NGINX, the term "context" refers to different configuration blocks or sections within the NGINX configuration file where you define various directives to configure the behavior of the server. These contexts help organize and separate different types of configuration settings, making it easier to manage and customize the server's behavior for different scenarios.
 
 
-## The Main Context
+### The Main Context
 The most general context is the “main” or “global” context. It is the only context that is not contained within the typical context blocks that look like this:
 
 ![image](https://github.com/nirajp82/NGINX/assets/61636643/a50fa75f-2a0b-4a86-ad9a-8fdc0c6697f8)
@@ -27,7 +27,7 @@ Some common details that are configured in the main context are the system user 
 
 The main context (outermost block) and the HTTP context (within the http block) are executed at the start of NGINX when it is initially loaded or restarted. These contexts contain global and server-wide settings that apply to the entire server. 
 
-## The Events Context
+### The Events Context
 The “events” context is contained within the “main” context. It is used to set global options that affect how Nginx handles connections at a general level. There can only be a single events context defined within the Nginx configuration.
 
 Nginx uses an event-based connection processing model, so the directives defined within this context determine how worker processes should handle connections. The event-driven model enables NGINX to efficiently manage multiple connections without relying on a separate thread or process for each connection.
@@ -38,7 +38,7 @@ This context will look like this in the configuration file, outside of any other
 
 In this example, the worker_connections directive is set to 1024, which determines the maximum number of simultaneous connections that each worker process can handle. This directive impacts how NGINX allocates resources and handles incoming connections.
 
-## The HTTP Context
+### The HTTP Context
 Defining an HTTP context is probably the most common use of Nginx. When configuring Nginx as a web server or reverse proxy, the “http” context will hold the majority of the configuration. This context will contain all of the directives and other contexts necessary to define how the program will handle HTTP or HTTPS connections.
 
 The http context is a sibling of the events context, so they should be listed side-by-side, rather than nested. They both are children of the main context:
@@ -65,13 +65,12 @@ This context includes directives that affect how the server handles HTTP request
 
 The HTTP context (within the http block) (Also main context - outermost block) are executed at the start of NGINX when it is initially loaded or restarted. These contexts contain global and server-wide settings that apply to the entire server.
 
-## The Server Context
+### The Server Context
 Within the http context, you can have multiple server blocks. Each server block represents a virtual server that handles requests for a specific domain or IP address. Inside the server context, you can define directives that are specific to that virtual server, such as listen ports, server_name, SSL settings, and request handling rules.
 
 The server context is where you configure the behavior of your NGINX server for a specific website or application. It includes directives that define how requests should be processed, what content should be served, and how the server should respond to different scenarios.
 
 ![image](https://github.com/nirajp82/NGINX/assets/61636643/c16d99a4-f65f-4dd4-9a30-0923dec8cc63)
-
 
 In this example:
 
@@ -95,7 +94,7 @@ Within the server context, you can use directives to configure various aspects o
 
   The server context (within the http block) is executed when the server receives a request that matches the server_name directive in that context. If multiple virtual hosts are defined, NGINX selects the appropriate server block based on the request's hostname.
 
-## Location Context: 
+### Location Context: 
 The location context allows you to specify configuration settings for specific URL paths within a server block. You can use location blocks to define how NGINX should handle requests to different URLs, including proxying requests to backend servers, serving static files, and applying access controls.
 
 ```nginx
@@ -107,7 +106,7 @@ location /static/ {
 The location context (within a server block) is executed for each request that matches the location pattern defined in that context. These context-specific settings apply to specific URL paths or patterns and are executed independently for each matching request.
 
 
-## If Context: 
+### If Context: 
 The if context allows you to add conditional statements to your configuration. It's important to note that the use of if directives should be minimized because they can be complex and potentially lead to unexpected behavior.
 
 Example:
@@ -119,7 +118,6 @@ if ($request_uri ~* ^/admin) {
 ```
 
 The server context allows you to customize the behavior of your NGINX server for different domains or IP addresses, making it possible to host multiple websites or applications on the same server with distinct configurations.
-
 
 
 ```nginx

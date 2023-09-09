@@ -1,5 +1,15 @@
 Using the NGINX Lua module allows you to extend NGINX's functionality by embedding Lua scripts directly into your NGINX configuration. This can be useful for tasks like authentication, URL rewriting, or dynamic content generation. Here's a step-by-step guide on how to use the NGINX Lua module:
 
+##### Note: Pay attention to the path and version in the command.
+ -  `--prefix=/usr/share/nginx`
+ -  `lua_package_path "/usr/share/nginx/lib/lua/?.lua;;";`
+ -  `--with-ld-opt="-Wl,-rpath,/usr/local/lib" \`
+   
+By default, on many Linux systems, including Amazon Linux, the libraries and header files are installed to the following locations:
+
+Libraries (lib): /usr/local/lib
+Header Files (include): /usr/local/include
+
 ```nginx
 # Change to the root directory
 cd /

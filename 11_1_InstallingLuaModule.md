@@ -48,7 +48,9 @@ cd /x_np_nginx/nginx-1.19.3/
 --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log \
 --http-client-body-temp-path=/var/lib/nginx/tmp/client_body \
 --pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module
+
 make
+
 sudo make install
 
 # Download and extract ngx_devel_kit and lua-nginx-module

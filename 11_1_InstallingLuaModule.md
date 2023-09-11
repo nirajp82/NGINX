@@ -30,6 +30,13 @@ cd /x_np_nginx
 mkdir x_np_modules
 cd x_np_modules
 
+cd /x_np_nginx/nginx-1.19.3/x_np_modules
+sudo yum install -y gcc make autoconf automake libtool mercurial
+hg clone http://hg.nginx.org/njs
+cd njs/
+sudo ./configure
+sudo make
+
 # Download and install LuaJIT 2.1
 cd /x_np_nginx/nginx-1.19.3/x_np_modules
 wget https://github.com/openresty/luajit2/archive/refs/tags/v2.1-20230410.tar.gz -O luajit2.tar.gz

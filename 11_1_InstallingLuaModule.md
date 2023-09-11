@@ -49,7 +49,7 @@ cd /x_np_nginx/nginx-1.19.3/
 --conf-path=/etc/nginx/nginx.conf \
 --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log \
 --http-client-body-temp-path=/var/lib/nginx/tmp/client_body \
---pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module
+--pid-path=/var/run/nginx.pid --lock-path=/var/lock/subsys/nginx --user=nginx --group=nginx --with-http_mp4_module;
 
 make
 

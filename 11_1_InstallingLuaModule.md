@@ -52,6 +52,7 @@ make
 sudo make install
 
 # Download and extract ngx_devel_kit and lua-nginx-module
+cd /x_np_nginx/nginx-1.19.3/x_np_modules
 wget https://github.com/vision5/ngx_devel_kit/archive/refs/tags/v0.3.2.tar.gz -O ngx_devel_kit.tar.gz
 tar -xzvf ngx_devel_kit.tar.gz
 

@@ -60,6 +60,8 @@ wget https://github.com/openresty/lua-nginx-module/archive/refs/tags/v0.10.25.ta
 tar -xzvf lua-nginx-module.tar.gz
 
 # Configure and install NGINX with ngx_devel_kit and lua-nginx-module
+cd /x_np_nginx/nginx-1.19.3/
+
 ./configure --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules \
 --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log \
 --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body \

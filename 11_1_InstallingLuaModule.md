@@ -11,6 +11,8 @@ Libraries (lib): /usr/local/lib
 Header Files (include): /usr/local/include
 
 ```nginx
+sudo yum install libxml2 libxslt libxml2-devel libxslt-devel
+
 # Change to the root directory
 cd /
 

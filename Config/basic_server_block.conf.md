@@ -9,7 +9,8 @@ server {
         }
 
          location /hello-world {
+             add_header Content-Type text/plain;
              return 200 "Hello, World!";
-      }      
+         }      
 }
 ```

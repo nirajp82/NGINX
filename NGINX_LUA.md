@@ -6,8 +6,9 @@ http {
         listen 80;	
         location / {
 	                  set $upstream_svr_addr '';   
-	                  access_by_lua_block {			
-			                    ngx.var.upstream_addr = upstream_util.find_upstream_server()
+	                  access_by_lua_block {
+                                   local upstream_util = require("upstream_util")		
+			           ngx.var.upstream_addr = upstream_util.find_upstream_server()
 	                  }  	   
 	       proxy_pass $upstream_svr_addr;
    }

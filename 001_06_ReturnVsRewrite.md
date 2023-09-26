@@ -12,6 +12,23 @@ The `return` directive is primarily used to control the response returned to the
 
 - **No URL Rewriting**: `return` does not change the requested URL. It sends the response with the specified status code and body without altering the URL.
 
+```nginx
+location /old-path {
+    return 301 /new-path;
+}
+```
+In this example:
+
+When a request is made to /old-path, Nginx returns an HTTP status code of 301 (Moved Permanently) and redirects the client to /new-path.
+
+You can also return custom response codes and messages. For instance, to return a "Not Found" response:
+
+```nginx
+location /missing-page {
+    return 404 "The requested page was not found";
+}
+```
+
 ### 2. `rewrite` Directive:
 
 The `rewrite` directive, on the other hand, is used to change the URL of the request by performing URL rewriting. Here are the key differences and use cases for the `rewrite` directive:
@@ -24,4 +41,20 @@ The `rewrite` directive, on the other hand, is used to change the URL of the req
 
 - **No Direct Response Control**: `rewrite` itself does not control the response sent to the client. It's mainly used for modifying the request URL.
 
+```nginx
+location /old-path {
+    rewrite ^/old-path/(.*)$ /new-path/$1 last;
+}
+```
+In this example:
+
+When a request is made to /old-path/some-page, the rewrite directive captures the part after /old-path/ (in this case, some-page) using a regular expression and appends it to /new-path/. So, the request is internally rewritten to /new-path/some-page.
+
+The last flag indicates that Nginx should apply the rewritten URI to the current location block.
+
 In summary, `return` is primarily for controlling the HTTP response that is sent to the client, including setting status codes and response bodies. `rewrite`, on the other hand, is for changing the URL of the incoming request, which can affect how NGINX processes the request but doesn't directly control the response sent to the client. You can use these directives separately or in combination to achieve various behavior modifications in your NGINX configuration.
+
+To summarize:
+
+* Use return for simple HTTP status codes, redirections, and sending response bodies.
+* Use rewrite for more complex URL manipulations, including pattern-based rewriting and route adjustments.

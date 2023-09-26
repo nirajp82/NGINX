@@ -10,6 +10,7 @@ The `access_log` directive in Nginx is used to configure access logs for HTTP se
 4. **Built in variables**
 5. **Important Considerations**
 6. **Log Rotation**
+7. Disable Access Log
 
 ---
 
@@ -182,5 +183,36 @@ Example `/etc/logrotate.d/nginx` configuration:
 This `logrotate` configuration specifies daily rotation, compression, and retention of 14 rotated log files.
 
 ---
+
+## 7. Disable Access Log
+In Nginx, the `access_log off;` directive is used to disable access logging for a particular `location` block or server block. When this directive is set, Nginx will not record access log entries for requests that match the specified location or server block. This can be useful when you want to exclude specific parts of your website from being logged for privacy or performance reasons.
+
+Here's an example of how to use `access_log off;` in an Nginx configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name example.com;
+
+    # Disable access logging for all requests under /private/
+    location /private/ {
+        access_log off;
+        # Other configuration for handling requests under /private/
+    }
+
+    # Enable access logging for other requests
+    access_log /var/log/nginx/access.log;
+    
+    # Other server configuration
+}
+```
+
+In this example:
+
+- The `access_log off;` directive is used within the `location /private/` block to disable access logging for all requests under the `/private/` URL path.
+
+- Outside of the `location` block, access logging is enabled with `access_log /var/log/nginx/access.log;` for all other requests that do not match the `/private/` location.
+
+By using `access_log off;`, you can selectively disable access logging for specific parts of your website while still recording access logs for other areas. This can help you manage your logs more effectively and respect user privacy when needed.
 
 The `access_log` directive in Nginx is a powerful tool for monitoring and troubleshooting web server requests. Custom log formats, different log file names, and proper log rotation are essential aspects of maintaining an effective logging system.

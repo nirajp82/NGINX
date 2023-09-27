@@ -24,16 +24,25 @@ In NGINX, variables are used to store and manipulate values that can be used in 
 
 Here is a list of some common built-in variables in NGINX:
 
-- `$host`: The host name from the request.
-- `$request_uri`: The full original request URI.
+- `$host`: The host name from the request. Represents the hostname specified in the request made to the server.
+- `$request_uri`: Contains the full original request URI, including the query string (e.g., /page?param=value).
 - `$remote_addr`: The IP address of the client.
-- `$server_name`: The server name.
-- `$uri`: The current URI after any rewrite rules.
-- `$args`: The query string (e.g., `?param=value`).
+- `$remote_port`: Contains the port number of the client making the request.
+- `$server_name`:  Contains the server name that was used to match the current server block.
+- `$uri`: The current URI after any rewrite rules. Contains the request URI without the query string (e.g., /page).
+- `$args`: Contains the query string part of the URL, excluding the question mark (e.g., param=value).
+- `$query_string`: Contains the full query string, including the question mark (e.g., ?param=value).
 - `$http_user_agent`: The user agent string sent by the client's browser.
-- `$http_referer`: The referring URL.
+- `$http_referer`: The referring URL. if provided by the client.
 - `$request_method`: The HTTP request method (e.g., GET, POST).
 - `$http_cookie`: The value of the Cookie header sent by the client.
+- `$server_addr`: Contains the IP address of the server handling the request.
+- `$server_port`: Contains the port number on which the server is listening.
+- `$scheme`: Represents the scheme (HTTP or HTTPS) of the incoming request.
+- `$http_user_agent`: Stores the User-Agent string sent by the client's browser or user agent.
+- `$document_root`: Represents the root directory for the current server block.
+- `$request_filename`: Contains the path to the requested file on the server's filesystem.
+- `$is_args`: Will be empty unless a query string is present, in which case it will contain ?.
 
 ### Using Variables in NGINX Config:
 

@@ -112,4 +112,52 @@ Product ID not found
 
 This demonstrates how the `map` directive in combination with regular expressions can be used to extract specific values from request URLs and use them in your Nginx configuration.
 
+### Example 3
+Check if variable is null or empty string. 
+
+The `map` block in Nginx is primarily used for creating key-value mappings based on variables, and it's not well-suited for directly checking if a variable is null or empty. However, you can achieve this by combining the `map` block with other directives like `if`. Here's an example of how to use the `map` block to check if a variable is null or empty:
+
+```nginx
+http {
+    map $lua_variable $is_empty {
+        "~^$"      1;  # Set 1 if $lua_variable is empty or null
+        default    0;  # Set 0 otherwise
+    }
+
+    server {
+        listen 80;
+        server_name example.com;
+
+        location / {
+             access_by_lua_block {
+                # Lua script to set $lua_variable based on your logic
+                if some_condition then
+                    ngx.var.lua_variable = "not empty"
+                else
+                    ngx.var.lua_variable = ""
+                end
+            }
+
+            if ($is_empty = 1) {
+                return 404 "The Lua variable is empty\n";
+            }
+
+            return 200 "The Lua variable is not empty: $lua_variable\n";
+        }
+    }
+}
+```
+
+In this configuration:
+
+- We create an http block with a map block. The $lua_variable (which will be set by your Lua script) is mapped to the $is_empty variable. If $lua_variable is empty (null or an empty string), $is_empty will be set to 1; otherwise, it will be set to 0.
+
+- Inside the `location /` block, the Lua script sets the $lua_variable based on your logic. In this example, it sets $lua_variable to "not empty" if some_condition is true; otherwise, it sets it to an empty string.
+
+- We use an `if` directive to check the value of `$is_empty`. If it's equal to 1, we return a 404 response indicating that the Lua variable is empty or null. Otherwise, we proceed with further processing, and you can access the value of `$lua_variable` as needed.
+
+This configuration allows you to use the `map` block to check if an Nginx variable is null or empty and take appropriate actions based on that condition within your Nginx server block.
+
+
+
 You can use the `map` directive for more complex mappings and configurations, such as mapping URL paths to different backends, creating custom headers, or dynamically configuring Nginx based on variables like IP addresses or user agents. It's a powerful tool for customizing the behavior of your Nginx server based on various conditions.

@@ -24,6 +24,12 @@ In this example:
 
 - We use the `proxy_add_x_forwarded_for` variable as the value for the `X-Forwarded-For` header. This will append the client's IP address to the existing `X-Forwarded-For` header, preserving any existing values.
 
+With this configuration, as requests pass through each proxy server in the chain, the X-Forwarded-For header will contain a list of IP addresses representing the client's path through the proxies. For example, if the request goes through two proxy servers, the X-Forwarded-For header might look like this:
+
+```X-Forwarded-For: client_ip, proxy1_ip, proxy2_ip```
+
+This allows the final backend server to see the client's original IP address (client_ip) along with the IP addresses of the intermediate proxy servers (proxy1_ip and proxy2_ip).
+
 This is a common configuration when you want to pass along the client's IP address through a chain of proxy servers while using Nginx as the front-end proxy.
 
 Remember that the behavior of `proxy_add_x_forwarded_for` depends on its value and the existing `X-Forwarded-For` header in the incoming request. You can set it to `off` if you need more control over the header or if you don't want to expose the client's IP address to the upstream server.

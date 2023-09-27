@@ -10,7 +10,7 @@ server {
 
          location /hello-world {
              add_header Content-Type text/plain;
-             return 200 "Hello, World!";
+             return 200 "Hello, world, IPAddr: $server_addr, Requested URL: $request_uri\n";
          }      
 }
 ```

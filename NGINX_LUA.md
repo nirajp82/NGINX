@@ -40,6 +40,8 @@ function get_module_info()
             ngx.log(ngx.DEBUG, "Module: " ..  moduleName .. " Location: " ..  (modulePath or ""))
       end
 end
+```
+
 
 ## How to return a list of CNAME records for a given domain name using Lua script inside NGINX+
 

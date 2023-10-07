@@ -93,7 +93,7 @@ if cname_records then
 else
   ngx.log(ngx.ERR, "No CNAME records found for domain " .. domain)
 end
-
+```
 
 ### Explanation
 

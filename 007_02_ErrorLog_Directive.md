@@ -68,3 +68,30 @@ Implement log rotation mechanisms to manage log file sizes and prevent them from
 ## 5. Important Considerations
 
 - Be mindful of the log levels you configure, especially verbose levels like "debug." Use them sparing
+
+  ```nginx
+      ngx.log(ngx.STDERR, "This is a standard error message.")
+    -- Log an emergency situation
+    ngx.log(ngx.EMERG, "This is an emergency message!")
+
+    -- Log an alert
+    ngx.log(ngx.ALERT, "This is an alert message!")
+
+    -- Log a critical condition
+    ngx.log(ngx.CRIT, "This is a critical message!")
+
+    -- Log an error
+    ngx.log(ngx.ERR, "This is an error message.")
+
+    -- Log a warning
+    ngx.log(ngx.WARN, "This is a warning message.")
+
+    -- Log a notice
+    ngx.log(ngx.NOTICE, "This is a notice message.")
+
+    -- Log an informational message
+    ngx.log(ngx.INFO, "This is an informational message.")
+
+    -- Log a debug message
+    ngx.log(ngx.DEBUG, "This is a debug message.")
+  ```

@@ -165,3 +165,184 @@ This configuration is highly useful in scenarios where:
 
 This configuration shows how to combine **Lua scripting** in NGINX with **SNI** to dynamically set the `proxy_pass` directive and ensure the correct **SSL certificate** is used based on the requested domain. By setting the backend server dynamically using Lua (`$backend_url`), and ensuring that `proxy_ssl_name $host;` is used, NGINX can forward traffic securely to the appropriate backend with the correct SNI for SSL/TLS certificate selection.
 
+
+Great question! Both `proxy_ssl_name $host` and `proxy_set_header Host $host` deal with the **Host** header in HTTP requests, but they serve very different purposes in the context of NGINX reverse proxying and SSL/TLS communication.
+
+
+### **1. `proxy_ssl_name $host`**
+**Purpose**: Sets the **SNI** (Server Name Indication) when NGINX communicates with the upstream (backend) server over **HTTPS**.
+
+- **SNI** is an extension to the SSL/TLS protocol that allows clients to indicate which hostname they are trying to connect to during the SSL handshake. This is important when multiple domains are served on the same IP address using different SSL/TLS certificates.
+  
+- When you use `proxy_ssl_name $host`, NGINX is forwarding the value of the `$host` variable (which corresponds to the domain requested by the client in the `Host` header) as the **SNI** to the backend server during the SSL handshake. This allows the backend server to select the appropriate SSL certificate for that domain.
+
+**Key points about `proxy_ssl_name`**:
+- It affects the **SSL/TLS handshake** with the upstream server.
+- It ensures the correct SSL/TLS certificate is selected for a domain when multiple certificates are hosted on the same server or IP (using SNI).
+- It is used **only during SSL connections** between NGINX and the backend server (i.e., when `proxy_pass` is used with `https://`).
+
+**Example**:
+```nginx
+proxy_ssl_name $host;
+```
+If a client connects to `https://www.example.com`, the `$host` variable will be `www.example.com`, and `proxy_ssl_name` ensures that NGINX forwards `www.example.com` as the SNI value to the backend server, so the backend knows which certificate to present.
+
+---
+
+### **2. `proxy_set_header Host $host`**
+**Purpose**: Sets the **Host** header in the HTTP request that is forwarded to the upstream (backend) server.
+
+- When NGINX acts as a reverse proxy, it forwards the original HTTP request to the backend server. The `Host` header in the HTTP request tells the backend which domain the client is requesting.
+  
+- `proxy_set_header Host $host` ensures that the **Host** header in the proxied request is set to the value of the `$host` variable (which is derived from the client request's `Host` header). This is important when the backend server needs to know the original hostname for things like routing, logging, or generating the correct URLs.
+
+**Key points about `proxy_set_header`**:
+- It affects the **HTTP headers** sent to the backend server.
+- It tells the backend server which domain the client intended to contact, allowing the backend to properly handle routing or other domain-specific logic.
+- It is typically used when the backend server needs to serve different content based on the `Host` header (such as different virtual hosts on the same server).
+
+**Example**:
+```nginx
+proxy_set_header Host $host;
+```
+When a client connects to `https://www.example.com`, the `Host` header in the HTTP request will be `www.example.com`. By using `proxy_set_header Host $host;`, NGINX ensures that this header is passed along to the backend server, so it knows which domain the client was trying to access.
+
+---
+
+### **Key Differences**
+
+| **Feature**                     | **`proxy_ssl_name $host`**                                          | **`proxy_set_header Host $host`**                                  |
+|----------------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------|
+| **Purpose**                      | Sets the **SNI** for SSL/TLS handshake between NGINX and backend    | Sets the **Host header** in the HTTP request sent to the backend   |
+| **Context**                      | Used for **SSL/TLS** connections with the backend                   | Used for **HTTP headers** when proxying requests                   |
+| **Effect on Backend**            | Allows the backend to select the correct SSL certificate via SNI    | Tells the backend which hostname the client originally requested   |
+| **When is it used?**             | Only when using `proxy_pass` with `https://`                        | For both HTTP (`proxy_pass http://...`) and HTTPS (`proxy_pass https://...`) |
+| **Usage Example**                | `proxy_ssl_name $host;`                                             | `proxy_set_header Host $host;`                                      |
+| **Important for**                | Selecting the correct SSL certificate on the backend               | Proper routing, virtual hosts, logging, or URL generation by the backend |
+
+---
+
+### **When to Use Each Directive?**
+
+- **Use `proxy_ssl_name $host`** when:
+  - You are proxying to a backend that uses **SNI** to differentiate between multiple SSL certificates for different domains on the same IP address.
+  - You need to ensure that the correct SSL/TLS certificate is used for a specific domain when NGINX is proxying an HTTPS request to the backend.
+  
+- **Use `proxy_set_header Host $host`** when:
+  - You want to preserve the original `Host` header in the proxied request so the backend can know which domain the client intended to contact. This is useful for routing, virtual hosting, or logging.
+  - Your backend is configured to serve different content based on the `Host` header (e.g., different sites or applications running on the same server).
+
+### **Example Use Case Scenario**
+
+Imagine you have an NGINX reverse proxy setup where multiple domains are hosted on the same backend server, and that server uses **SNI** to differentiate SSL certificates for each domain. Here's how both directives might work together:
+
+1. A client sends a request to `https://www.example.com`.
+   
+2. **`proxy_ssl_name $host;`**:
+   - NGINX uses `$host` (which is `www.example.com`) to set the **SNI** during the SSL handshake with the backend server. This ensures the backend server presents the correct SSL certificate for `www.example.com`.
+   
+3. **`proxy_set_header Host $host;`**:
+   - The `Host` header in the proxied HTTP request is set to `www.example.com`, so the backend server knows that the request is for `www.example.com`, even if multiple domains are served by the same backend.
+
+---
+
+### **Conclusion**
+
+- **`proxy_ssl_name $host`** is used during the **SSL handshake** to ensure that the correct **SNI** is sent to the backend server, enabling the server to select the correct SSL certificate.
+  
+- **`proxy_set_header Host $host`** is used to preserve the **Host header** in the proxied HTTP request, ensuring that the backend knows which domain the client intended to access.
+
+They are related to the **Host** header but serve different purposes — one for SSL/TLS negotiation (SNI) and the other for passing the original HTTP header to the backend.
+
+
+When both `proxy_ssl_name $host;` and `proxy_set_header Host $host;` are set in the same NGINX configuration, they work together but perform distinct roles during the reverse proxying process. Here's how they will interact:
+
+### 1. **`proxy_ssl_name $host;`** – Setting the SNI for SSL/TLS Handshake
+- **Purpose**: This directive sets the **Server Name Indication (SNI)** field for the SSL/TLS handshake between NGINX and the upstream backend server when using HTTPS. The `$host` variable contains the hostname the client is trying to reach (i.e., the domain specified in the `Host` header of the client's request).
+- **Function**: NGINX uses this value to indicate to the backend server which domain name it should use when selecting an SSL certificate during the TLS handshake.
+  
+#### **How It Works**:
+- When a client makes an HTTPS request, say to `https://www.example1.com`, the `$host` variable holds the value `www.example1.com`.
+- NGINX, when forwarding the request to the backend server (using `proxy_pass https://backend.example.com`), uses the `$host` value as the **SNI** in the SSL/TLS handshake to ensure the backend server selects the correct SSL certificate for `www.example1.com` (if multiple SSL certificates exist for different domains hosted on the same backend server).
+  
+### 2. **`proxy_set_header Host $host;`** – Passing the Host Header to the Backend
+- **Purpose**: This directive modifies the **HTTP request header** sent to the upstream server by setting the `Host` header to the value of `$host`.
+- **Function**: It ensures that the backend server receives the original `Host` header value from the client request, allowing the backend server to know which domain the client is requesting. This is particularly useful if the backend has different routing logic or virtual hosts configured based on the `Host` header.
+  
+#### **How It Works**:
+- In the same scenario, when a client makes an HTTPS request to `https://www.example1.com`, the original HTTP request will contain a `Host: www.example1.com` header.
+- NGINX passes this header to the backend server as is, using the `proxy_set_header Host $host;` directive. This tells the backend server that the client is requesting `www.example1.com`.
+
+### **How They Work Together**
+
+When both of these directives are used together, here’s how the reverse proxy flow will work:
+
+#### **1. Client Makes a Request:**
+- A client sends an HTTPS request to `https://www.example1.com`.
+
+#### **2. NGINX Receives the Request:**
+- NGINX receives the request and matches it to a server block based on the domain (`www.example1.com` in this case).
+- NGINX is configured to forward the request to an upstream server, say `backend.example.com`.
+
+#### **3. SSL/TLS Handshake with Backend:**
+- Before sending the HTTP request to the backend, NGINX needs to establish an SSL/TLS connection with the backend server.
+- **`proxy_ssl_name $host;`** ensures that during the SSL/TLS handshake between NGINX and `backend.example.com`, the **SNI** value (`www.example1.com`) is sent to the backend.
+- The backend server will then select the correct SSL certificate for `www.example1.com` (if multiple certificates are configured for different domains).
+
+#### **4. Passing the HTTP Request to the Backend:**
+- After the SSL/TLS handshake is completed, NGINX forwards the original HTTP request to the backend server. 
+- **`proxy_set_header Host $host;`** ensures that the backend server sees the `Host` header as `www.example1.com` (which is the same as what the client originally requested).
+- This allows the backend server to know which domain the client is requesting and respond accordingly (e.g., by serving the appropriate content for `www.example1.com`).
+
+### **In Summary: How They Work Together**
+- **`proxy_ssl_name $host;`** is used to set the **SNI** during the SSL handshake between NGINX and the backend, ensuring that the backend server selects the correct SSL certificate for the requested domain (based on the value of `$host`).
+  
+- **`proxy_set_header Host $host;`** ensures that the **HTTP `Host` header** in the forwarded request matches the original `Host` header sent by the client, allowing the backend to properly route the request to the correct virtual host or domain-based configuration.
+
+### **Example of Full Flow with Both Directives**
+
+Assume the following configuration:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name www.example1.com;
+
+    location / {
+        proxy_pass https://backend.example.com;
+        proxy_ssl_name $host;  # Use $host as the SNI for SSL/TLS handshake
+        proxy_set_header Host $host;  # Pass the Host header to the backend
+    }
+}
+```
+
+1. **Client Request**: A client makes an HTTPS request to `https://www.example1.com`.
+
+2. **NGINX Configuration**:
+   - **SNI**: NGINX sends `www.example1.com` as the SNI during the SSL/TLS handshake to `backend.example.com`, so that the backend can use the correct certificate.
+   - **Host Header**: NGINX forwards the `Host: www.example1.com` header to the backend server, so the backend knows the domain the client is requesting.
+
+3. **Backend Server Behavior**:
+   - The backend server receives the request over HTTPS (with the correct certificate for `www.example1.com` thanks to the SNI).
+   - The backend processes the HTTP request, aware that the client is requesting `www.example1.com` (based on the `Host` header).
+
+### **When to Use Both in the Same Configuration**
+- **When Your Backend Server Uses SNI for SSL/TLS Certificates**: If your backend server hosts multiple domains and uses SNI to serve different SSL certificates for each domain (e.g., `backend.example.com` serving `www.example1.com`, `www.example2.com`, etc.), you'll need to use `proxy_ssl_name $host` to ensure the backend receives the correct SNI for selecting the right SSL certificate.
+  
+- **When Your Backend Server Needs to See the Correct `Host` Header**: If your backend server uses the `Host` header to determine routing, virtual hosts, or to serve different content based on the domain (for example, serving different websites or applications for each domain), you'll need to use `proxy_set_header Host $host`.
+
+### **Example Use Case**
+Imagine a backend server (`backend.example.com`) that serves two different sites: `www.example1.com` and `www.example2.com`. Both sites are served under different SSL certificates using SNI. The following happens:
+1. A client connects to `https://www.example1.com`.
+2. NGINX proxies the request to `https://backend.example.com` with the SNI set to `www.example1.com` (via `proxy_ssl_name $host`).
+3. The backend server uses the correct SSL certificate for `www.example1.com` because of the SNI.
+4. The `Host` header (`Host: www.example1.com`) is forwarded to the backend server by `proxy_set_header Host $host;`, ensuring the backend knows that the client is asking for `www.example1.com`.
+
+---
+
+### Conclusion
+- **`proxy_ssl_name $host;`** is used to ensure that NGINX sends the correct **SNI** to the backend server during the SSL handshake, allowing the backend to serve the appropriate SSL certificate.
+  
+- **`proxy_set_header Host $host;`** ensures that the **`Host` header** (which indicates the domain requested by the client) is passed along to the backend server, allowing it to route the request to the appropriate content or virtual host.
+
+When used together, these directives allow NGINX to correctly manage both SSL/TLS negotiation (via SNI) and HTTP request forwarding (via the `Host` header), ensuring the backend serves the correct SSL certificate and responds with the appropriate content for the requested domain.

@@ -1,93 +1,45 @@
-## Table of Contents
+### Explanation of `proxy_ssl_name $host;`
 
-1. [What is SNI, and why is it important in SSL/TLS communication?](#what-is-sni-and-why-is-it-important-in-ssltls-communication)
-2. [How does SNI work during the SSL handshake process?](#how-does-sni-work-during-the-ssl-handshake-process)
-3. [How does SNI function when there is an NGINX reverse proxy with a configuration like `proxy_ssl_name $host;`?](#how-does-sni-function-when-there-is-an-nginx-reverse-proxy-with-a-configuration-like-proxy_ssl_name-host)
-4. [Example NGINX Configuration with Multiple Server Blocks](#example-nginx-configuration-with-multiple-server-blocks)
-5. [Scenario with Example](#scenario-with-example)
-6. [Why is this Configuration Useful?](#why-is-this-configuration-useful)
-7. [Conclusion](#conclusion)
+In NGINX, when you configure it as a reverse proxy to forward requests to an HTTPS backend server, it may need to communicate with that backend server over SSL/TLS. The `proxy_ssl_name` directive allows you to specify the **hostname** that NGINX should use when establishing the SSL/TLS connection with the backend server.
 
-### 1. **What is SNI, and why is it important in SSL/TLS communication?**
+- **`proxy_ssl_name`**: This directive is used to set the **hostname** NGINX uses when performing the SSL handshake with the upstream (backend) server. It is especially useful when you're using SSL/TLS with the backend and need to ensure that the correct certificate is used during the handshake, based on the hostname of the request.
 
-**Server Name Indication (SNI)** is an extension to the SSL/TLS protocol that allows a client (such as a browser) to indicate the hostname it is attempting to connect to at the start of the SSL/TLS handshake. This allows the server to select the appropriate SSL/TLS certificate based on the hostname provided by the client, even if multiple domains are hosted on the same IP address and server.
+- **`$host`**: This is a built-in NGINX variable that represents the **hostname** (or domain name) from the incoming request's `Host` header. In an HTTP request, the `Host` header typically contains the domain name the client is trying to reach (e.g., `www.example.com`). The `$host` variable captures this value.
 
-#### Importance of SNI:
-- **Multiple SSL/TLS certificates on a single IP**: Without SNI, a server could only use one SSL/TLS certificate per IP address, limiting the hosting of multiple secure websites. SNI allows hosting multiple domains with different certificates on the same IP address, making it essential for modern shared hosting environments, CDNs, and cloud infrastructure.
-  
-- **Optimized resource usage**: In the past, each SSL/TLS-enabled site would require its own dedicated IP address, but with SNI, multiple sites can share the same IP while still maintaining secure HTTPS connections with distinct certificates.
+So, when you use:
 
-- **Enabling encryption in virtual hosting environments**: It allows web servers to differentiate between domains and serve the correct SSL certificate, even when different domains are hosted on the same server.
+```nginx
+proxy_ssl_name $host;
+```
 
----
+it tells NGINX to take the **hostname** from the client's request (the value of the `Host` header) and use that as the `Server Name` for the SSL handshake with the backend server.
 
-### 2. **How does SNI work during the SSL handshake process?**
+### Why is This Important?
 
-In an SSL/TLS handshake, the process typically begins when a client sends a **ClientHello** message to the server. The **ClientHello** message contains several pieces of information, including the supported cryptographic algorithms, the session ID, and importantly, the **SNI** extension, which includes the hostname the client is trying to connect to.
+This is important for the following reasons:
 
-#### SSL/TLS Handshake with SNI:
-1. **ClientHello (with SNI extension)**: When the client initiates the handshake, it sends a **ClientHello** message, which includes the SNI extension. The SNI extension contains the **hostname** of the server the client wants to communicate with (e.g., `www.example.com`). The SNI is transmitted as plain text in the early stages of the handshake, before the encryption starts, allowing the server to choose the correct SSL/TLS certificate.
-   
-   Example:
-   ```
-   ClientHello
-   ----------------
-   SNI: www.example.com
-   ```
-   
-2. **ServerHello (choosing the correct certificate)**: Upon receiving the **ClientHello**, the server uses the hostname specified in the SNI extension to determine which SSL/TLS certificate to present. This is crucial when a server hosts multiple websites (virtual hosts) on the same IP. If the server recognizes the hostname, it sends the appropriate **ServerHello** message with the selected certificate for that domain.
+1. **SNI (Server Name Indication)**: The `$host` variable allows NGINX to pass the correct hostname to the backend server during the SSL/TLS handshake, which is crucial for **SNI** (Server Name Indication). SNI is an SSL/TLS extension that allows multiple SSL certificates to be hosted on the same IP address. When the backend server hosts multiple SSL certificates, the server needs to know which certificate to present based on the requested hostname. By using `$host`, you ensure that the correct certificate is selected by the backend server.
 
-3. **Certificate Exchange**: The server sends the appropriate SSL/TLS certificate corresponding to the domain requested by the client. The certificate includes the server’s public key, which is used for encryption.
+2. **Multiple Hostnames/Virtual Hosts**: If your backend server hosts multiple virtual hosts and each virtual host has its own SSL certificate, setting `proxy_ssl_name $host;` ensures that the backend server uses the correct certificate for the requested hostname.
 
-4. **Key Exchange & Handshake Completion**: Following this, the client and server proceed with the rest of the SSL/TLS handshake (key exchange, encryption setup, etc.) to establish a secure connection.
+3. **Backend SSL Configuration**: In some cases, the backend server may perform certificate validation based on the hostname in the SNI field. If the hostname in the SNI doesn't match the expected hostname for that backend, the server may reject the connection. By forwarding the original `Host` header value (`$host`), you ensure that the SSL/TLS connection with the backend is properly established.
 
-#### Without SNI:
-- If the SNI extension is not used, the server would not know which certificate to present until after the handshake begins. This results in problems when multiple sites are hosted on the same server, as it can only serve one certificate, often leading to certificate mismatches or errors.
+### Example Scenario
+
+Let’s say NGINX is acting as a reverse proxy, and you have two backend servers, each handling a different domain name over HTTPS:
+
+- `www.example1.com` is handled by `backend1.example.com`
+- `www.example2.com` is handled by `backend2.example.com`
+
+Here’s a more detailed and comprehensive explanation of the provided **NGINX configuration** with a focus on each element, especially in the context of using **SNI (Server Name Indication)** to forward HTTPS requests to backend servers.
 
 ---
 
-### 3. **How does SNI function when there is an NGINX reverse proxy with a configuration like `proxy_ssl_name $host;`?**
-
-In an NGINX reverse proxy setup, SNI plays a crucial role in ensuring that the proxy forwards the correct domain name to the backend server, especially when handling multiple SSL/TLS certificates on the backend.
-
-#### NGINX and SNI:
-- In a typical scenario, NGINX is acting as a reverse proxy for several backend servers. If those backend servers are using SSL/TLS (i.e., HTTPS), NGINX needs to forward the correct hostname to the backend server for it to present the right SSL/TLS certificate. This is where the **SNI extension** is useful.
-
-- The directive `proxy_ssl_name $host;` in the NGINX configuration ensures that the **$host** variable (which corresponds to the hostname in the HTTP request) is passed as the SNI to the upstream server during the SSL handshake.
-
-#### Detailed Process:
-1. **Client makes request to NGINX**: A client sends an HTTPS request to NGINX with a specific hostname, such as `https://api.example.com`.
-
-2. **NGINX forwards request to backend**: NGINX forwards the request to the upstream backend server. At this point, it includes the **SNI extension** in the SSL/TLS handshake with the backend.
-
-3. **`proxy_ssl_name $host;` directive**: The `$host` variable, which represents the value of the `Host` header in the incoming HTTP request, is passed as the **SNI** value to the upstream server. This allows the backend to choose the correct SSL/TLS certificate for the specific domain.
-
-   For example, if the client connects to `https://api.example.com`, the `proxy_ssl_name $host;` directive ensures that the backend sees `api.example.com` as the SNI value during the SSL handshake. The backend server can then present the correct SSL certificate for `api.example.com`.
-
-4. **SSL handshake with the backend**: When NGINX forwards the request to the backend, it performs its own SSL/TLS handshake with the backend. Thanks to the SNI extension, the backend server knows which certificate to use, even if it hosts multiple domains with different SSL certificates on the same IP.
-
-   Example of the NGINX configuration:
-   ```nginx
-   location / {
-       proxy_pass https://backend_server;
-       proxy_ssl_name $host;  # Pass the hostname as the SNI to the backend
-       proxy_ssl_certificate /etc/nginx/cert.pem;  # NGINX's certificate for outgoing SSL
-       proxy_ssl_certificate_key /etc/nginx/key.pem;
-   }
-   ```
-
-#### Why is this important?
-- **SSL Termination at NGINX**: If NGINX is set up to handle SSL termination (decrypting the HTTPS request and passing it on to the backend via HTTP), the SNI is still needed to ensure that when NGINX makes a new SSL/TLS connection to the backend, it selects the correct certificate.
-  
-- **Backend SSL Negotiation**: By passing the `$host` variable as the SNI, NGINX ensures that the backend server is aware of which domain is being requested and can present the correct certificate for that domain. This is essential in environments where multiple SSL certificates are in use for different domains, but they share the same IP address.
-
----
-
-### NGINX Configuration Example:
+### NGINX Configuration Example Breakdown
 
 ```nginx
 server {
-    listen 80;
+    listen       443 ssl;
     server_name www.example1.com;
 
     location / {
@@ -97,7 +49,7 @@ server {
 }
 
 server {
-    listen 80;
+    listen       443 ssl;
     server_name www.example2.com;
 
     location / {
@@ -107,79 +59,120 @@ server {
 }
 ```
 
-### Explanation of the Configuration:
+### **Explanation of the Configuration**
 
-#### 1. **Server Block for `www.example1.com`**:
-- **`listen 80;`**: This tells NGINX to listen on port 80 (the default HTTP port). This means NGINX will accept incoming requests over HTTP for this server block.
-  
-- **`server_name www.example1.com;`**: This directive specifies that this server block will handle requests for the domain `www.example1.com`.
+This **NGINX configuration** contains two server blocks. Each block handles HTTPS requests (port 443) for different domain names (`www.example1.com` and `www.example2.com`) and forwards those requests to different backend servers, maintaining SSL/TLS security through the **SNI** mechanism.
 
-- **Location block (`/`)**: The location block defines how requests to `www.example1.com` should be handled. Here, it passes the requests to a backend server:
-  
-  - **`proxy_pass https://backend1.example.com;`**: The request is forwarded to the backend server `backend1.example.com` over HTTPS. NGINX will proxy the request to the backend using HTTPS as the protocol.
+Let’s break down each part of the configuration and how it works.
 
-  - **`proxy_ssl_name $host;`**: This directive tells NGINX to forward the value of the `Host` header from the client request as the **SNI** value when establishing the SSL/TLS connection with the backend. The `$host` variable is dynamically replaced with the hostname that the client is accessing — in this case, `www.example1.com`.
+---
 
-  - **What happens here**: When a client sends a request to `http://www.example1.com`, NGINX forwards the request to `https://backend1.example.com`. The `$host` variable will contain `www.example1.com`, which NGINX uses as the **SNI** when establishing the SSL/TLS handshake with `backend1.example.com`. This ensures that if `backend1.example.com` hosts multiple domains, it will present the correct SSL certificate for `www.example1.com`.
+### **General Structure and Purpose**
 
-#### 2. **Server Block for `www.example2.com`**:
-- **`listen 80;`**: Similarly, this tells NGINX to listen for requests on port 80 (HTTP) for this server block.
-  
-- **`server_name www.example2.com;`**: This server block handles requests for `www.example2.com`.
+- **Server Block**: Each `server` block in NGINX corresponds to a different virtual host configuration, determining how NGINX will handle requests for a specific domain. In this case, two domains (`www.example1.com` and `www.example2.com`) are configured to handle incoming HTTPS requests, proxying them to different backend servers.
 
-- **Location block (`/`)**: Just like the first server block, the location block here handles requests by forwarding them to another backend server:
+- **HTTPS (SSL)**: Both server blocks are configured to listen on port `443`, which is the default port for HTTPS traffic. SSL/TLS encryption is enabled by the `ssl` keyword after the `listen` directive.
 
-  - **`proxy_pass https://backend2.example.com;`**: The request is forwarded to the backend server `backend2.example.com` over HTTPS.
+---
 
-  - **`proxy_ssl_name $host;`**: The `$host` variable, which corresponds to `www.example2.com` in the client's request, is passed as the **SNI** to the backend server (`backend2.example.com`).
+### **Server Block 1: Handling Requests for `www.example1.com`**
 
-  - **What happens here**: When a client requests `http://www.example2.com`, NGINX proxies the request to `https://backend2.example.com`. The SNI sent during the SSL handshake will be `www.example2.com`. This ensures that `backend2.example.com` can serve the correct SSL certificate for `www.example2.com`, even if multiple certificates are hosted on the same backend.
+```nginx
+server {
+    listen       443 ssl;
+    server_name www.example1.com;
 
-### Key Concepts:
+    location / {
+        proxy_pass https://backend1.example.com;
+        proxy_ssl_name $host;   # Use the Host header as the SNI value
+    }
+}
+```
 
-1. **Proxying to Different Backends**:
-   - Both server blocks are set up to forward traffic to different backend servers (`backend1.example.com` and `backend2.example.com`). NGINX acts as a reverse proxy, forwarding requests to the appropriate backend based on the incoming domain (`www.example1.com` vs. `www.example2.com`).
+#### 1. **`listen 443 ssl;`**
+- This directive tells NGINX to listen on **port 443**, which is the default port for HTTPS traffic, and to enable SSL/TLS encryption. It means that this server block will handle incoming secure (HTTPS) requests.
 
-2. **Using `$host` as SNI**:
-   - The crucial part of this configuration is the use of `proxy_ssl_name $host;`. The `$host` variable contains the domain name that the client is trying to access (i.e., the domain in the `Host` header of the HTTP request). This variable is used as the **SNI** value during the SSL/TLS handshake with the backend.
-   
-   - This allows NGINX to forward the correct **SNI** value to the backend, ensuring that the backend knows which certificate to present, especially when multiple certificates are hosted on the same server.
+#### 2. **`server_name www.example1.com;`**
+- This specifies that the server block will handle requests for `www.example1.com`. When a client makes a request to `https://www.example1.com`, NGINX will match the hostname in the request to the `server_name` directive and process the request using this block.
 
-### Scenario with Example:
+#### 3. **`location / { ... }`**
+- This block defines how the server should handle requests that match the root URL path (`/`), meaning requests for the entire site. Here, the requests are being **proxied** to an upstream server.
 
-Let’s walk through a practical example of how this configuration works:
+#### 4. **`proxy_pass https://backend1.example.com;`**
+- The `proxy_pass` directive tells NGINX to forward the incoming request to the backend server `https://backend1.example.com`. This means that instead of serving content directly, NGINX acts as a reverse proxy and forwards the HTTPS request to the backend server over a secure connection.
 
-1. **Client Requests `www.example1.com`**:
-   - The client sends an HTTP request to `http://www.example1.com`. 
-   
-   - NGINX matches the request to the first server block (because of the `server_name www.example1.com` directive).
+#### 5. **`proxy_ssl_name $host;`**
+- **SNI (Server Name Indication)** is used here to forward the correct **hostname** to the backend server during the SSL/TLS handshake. The `$host` variable contains the value of the `Host` header from the client request, which in this case will be `www.example1.com`.
+- When NGINX makes the SSL/TLS connection to `backend1.example.com`, it sends `www.example1.com` as the **SNI** value during the handshake. This allows `backend1.example.com` to present the correct SSL certificate for `www.example1.com`, assuming it hosts multiple certificates on the same IP address (a common scenario with SNI).
 
-   - NGINX forwards the request to `https://backend1.example.com` using the `proxy_pass` directive. The important thing here is that NGINX passes the `Host` header (`www.example1.com`) as the SNI during the SSL/TLS handshake with `backend1.example.com`. This tells the backend to present the SSL certificate for `www.example1.com`.
+---
 
-2. **Client Requests `www.example2.com`**:
-   - The client sends an HTTP request to `http://www.example2.com`. 
-   
-   - NGINX matches the request to the second server block (because of the `server_name www.example2.com` directive).
+### **Server Block 2: Handling Requests for `www.example2.com`**
 
-   - NGINX forwards the request to `https://backend2.example.com`. During the SSL/TLS handshake, NGINX sends `www.example2.com` as the SNI value, so `backend2.example.com` knows to present the certificate for `www.example2.com`.
+```nginx
+server {
+    listen       443 ssl;
+    server_name www.example2.com;
 
-### Why is this Configuration Useful?
+    location / {
+        proxy_pass https://backend2.example.com;
+        proxy_ssl_name $host;   # Use the Host header as the SNI value
+    }
+}
+```
 
-This configuration is useful in situations where:
+The second server block is structured similarly to the first but is responsible for handling requests to `www.example2.com`.
 
-- **Multiple domains are hosted on different backends**, and each backend requires different SSL certificates (even if they share the same IP address).
-  
-- **SSL Termination at NGINX**: If SSL termination is happening at NGINX (meaning NGINX decrypts the incoming SSL traffic), NGINX still needs to handle secure communication with the backend servers over HTTPS. By using `proxy_ssl_name $host;`, NGINX ensures that each backend server receives the correct SNI, allowing it to select the proper certificate for the corresponding domain.
+#### 1. **`listen 443 ssl;`**
+- Again, this tells NGINX to listen on port `443` with SSL/TLS encryption for incoming HTTPS traffic.
 
-- **Shared IP Address with Different Certificates**: If `backend1.example.com` and `backend2.example.com` host multiple domains on the same server (with SNI), each server will present the correct certificate for the domain requested by the client, without the need for multiple IP addresses.
+#### 2. **`server_name www.example2.com;`**
+- This directive specifies that this server block will handle requests for the domain `www.example2.com`. Requests for this domain will be processed by this block, separate from the first.
 
-### Conclusion:
+#### 3. **`location / { ... }`**
+- Similar to the first server block, this location block defines how to handle requests to the root path (`/`). These requests will be proxied to another backend server.
 
-In this setup, NGINX is acting as a reverse proxy, forwarding requests to different backend servers while using the **SNI** extension to ensure the correct SSL certificate is used for each domain. The `proxy_ssl_name $host;` directive dynamically passes the client’s hostname (from the `Host` header) to the backend, allowing the backend to select the right certificate during the SSL/TLS handshake. This setup is essential for handling multiple domains with different SSL certificates on a shared infrastructure.
+#### 4. **`proxy_pass https://backend2.example.com;`**
+- Requests to `www.example2.com` are forwarded to `https://backend2.example.com`. The communication between NGINX and the backend server remains secure with HTTPS.
 
-### Summary:
-- **SNI** is a vital extension to SSL/TLS that allows multiple SSL certificates to be used on a single IP address, enabling secure hosting of multiple domains.
-- During the **SSL/TLS handshake**, the client sends the SNI to the server, which uses it to select the correct certificate.
-- In an **NGINX reverse proxy** setup, the `proxy_ssl_name $host;` directive ensures that the correct hostname (and hence the correct certificate) is passed along to the backend server during the SSL handshake, allowing for proper SSL/TLS certificate selection.
+#### 5. **`proxy_ssl_name $host;`**
+- The `$host` variable is passed as the **SNI** value to `backend2.example.com` during the SSL handshake. If `backend2.example.com` hosts multiple SSL certificates for different domains (as is common with SNI), this ensures that the backend serves the correct SSL certificate for `www.example2.com`.
 
+---
 
+### **Key Concepts and How SNI Works**
+
+1. **SNI (Server Name Indication)**:
+   - SNI is an extension to the SSL/TLS protocol that allows a client (e.g., a browser) to indicate which domain it is trying to reach during the SSL handshake. This is crucial when multiple websites are hosted on the same IP address but require different SSL certificates.
+   - In the context of the provided configuration, NGINX is forwarding the value of the `Host` header (i.e., `$host`) to the backend server as the SNI value. This ensures that the backend server knows which certificate to use when responding to the client.
+
+2. **Proxying HTTPS Requests**:
+   - The `proxy_pass` directive is used to forward requests to an upstream server. In this case, NGINX is acting as a reverse proxy, meaning it forwards client requests to another server (backend) for processing.
+   - The connection between NGINX and the backend server is made over HTTPS, ensuring that traffic is encrypted during the entire communication process.
+
+3. **Why `proxy_ssl_name $host` is Important**:
+   - By using the `$host` variable for the `proxy_ssl_name`, NGINX ensures that the correct SNI value is sent to the backend server. If `backend1.example.com` or `backend2.example.com` hosts multiple domains and certificates, this ensures that the server can present the appropriate certificate for the requested domain (`www.example1.com` or `www.example2.com`).
+   - Without this configuration, the backend might not be able to determine which certificate to use, leading to SSL errors.
+
+---
+
+### **Practical Scenario**
+
+Let’s walk through an example of how this configuration works:
+
+1. A client requests `https://www.example1.com`.
+2. NGINX receives the request and matches it to the first server block (`server_name www.example1.com`).
+3. NGINX forwards the request to `https://backend1.example.com` using the `proxy_pass` directive.
+4. During the SSL/TLS handshake, NGINX sends the SNI value as `www.example1.com` to `backend1.example.com`, allowing it to present the correct certificate.
+5. The backend responds to NGINX with the content, and NGINX forwards it back to the client.
+
+Similarly, for a request to `https://www.example2.com`, NGINX will follow the same steps, but forward the request to `https://backend2.example.com`, ensuring that the correct SSL certificate is used by sending the appropriate SNI value (`www.example2.com`).
+
+---
+
+### **Conclusion**
+
+In summary:
+- This NGINX configuration is designed to handle multiple HTTPS domains (`www.example1.com` and `www.example2.com`) by forwarding requests to different backend servers.
+- The `proxy_ssl_name $host;` directive ensures that the correct **SNI value** is passed to the backend servers, enabling them to present the appropriate SSL certificates.
+- This setup is useful when hosting multiple SSL-secured sites on the same NGINX instance but needing to proxy traffic to backend servers that require different SSL certificates for each domain.

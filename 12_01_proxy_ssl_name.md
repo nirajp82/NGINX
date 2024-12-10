@@ -24,155 +24,144 @@ This is important for the following reasons:
 
 3. **Backend SSL Configuration**: In some cases, the backend server may perform certificate validation based on the hostname in the SNI field. If the hostname in the SNI doesn't match the expected hostname for that backend, the server may reject the connection. By forwarding the original `Host` header value (`$host`), you ensure that the SSL/TLS connection with the backend is properly established.
 
-### Example Scenario
+Certainly! Let's explore how you can dynamically set the `proxy_pass` URL **on the fly** based on certain conditions (such as domain-based routing or other variables) and still use the `proxy_ssl_name` directive to ensure that the correct **SNI** (Server Name Indication) is forwarded to the backend server.
 
-Let’s say NGINX is acting as a reverse proxy, and you have two backend servers, each handling a different domain name over HTTPS:
+This will involve using **NGINX with Lua** to dynamically set the `proxy_pass` value while maintaining the correct SNI configuration using `proxy_ssl_name`. Lua in NGINX can be used to implement logic that conditionally sets which backend server a request should be forwarded to. The `proxy_ssl_name` directive can still be used to pass the **hostname** as the SNI value to ensure the correct SSL/TLS certificate is used by the backend server.
 
-- `www.example1.com` is handled by `backend1.example.com`
-- `www.example2.com` is handled by `backend2.example.com`
-
-Here’s a more detailed and comprehensive explanation of the provided **NGINX configuration** with a focus on each element, especially in the context of using **SNI (Server Name Indication)** to forward HTTPS requests to backend servers.
-
----
-
-### NGINX Configuration Example Breakdown
+### NGINX Configuration with Lua Example
 
 ```nginx
-server {
-    listen       443 ssl;
-    server_name www.example1.com;
+http {
+    lua_shared_dict backend_cache 10m;
 
-    location / {
-        proxy_pass https://backend1.example.com;
-        proxy_ssl_name $host;   # Use the Host header as the SNI value
-    }
-}
+    server {
+        listen 443 ssl;
+        server_name www.example1.com www.example2.com;
 
-server {
-    listen       443 ssl;
-    server_name www.example2.com;
+        location / {
+            # Dynamically set the proxy_pass based on the host or other condition
+            set $backend_url "";
 
-    location / {
-        proxy_pass https://backend2.example.com;
-        proxy_ssl_name $host;   # Use the Host header as the SNI value
+            # Use Lua to dynamically select the backend server
+            content_by_lua_block {
+                local host = ngx.var.host
+                -- Conditional logic based on host or other factors
+                if host == "www.example1.com" then
+                    ngx.var.backend_url = "https://backend1.example.com"
+                elseif host == "www.example2.com" then
+                    ngx.var.backend_url = "https://backend2.example.com"
+                else
+                    ngx.var.backend_url = "https://default-backend.example.com"
+                end
+            }
+
+            # Proxy request to the dynamically chosen backend server
+            proxy_pass $backend_url;
+
+            # Use the Host header for the SNI during the SSL handshake
+            proxy_ssl_name $host;   # Ensure the correct SSL certificate is selected based on the domain
+        }
     }
 }
 ```
 
-### **Explanation of the Configuration**
+### **Detailed Explanation**
 
-This **NGINX configuration** contains two server blocks. Each block handles HTTPS requests (port 443) for different domain names (`www.example1.com` and `www.example2.com`) and forwards those requests to different backend servers, maintaining SSL/TLS security through the **SNI** mechanism.
+This configuration demonstrates how you can conditionally select which backend server to proxy the request to based on the `Host` header (or any other variable). At the same time, it ensures that the correct **SNI** is used when making the SSL/TLS connection to the backend server. 
 
-Let’s break down each part of the configuration and how it works.
-
----
-
-### **General Structure and Purpose**
-
-- **Server Block**: Each `server` block in NGINX corresponds to a different virtual host configuration, determining how NGINX will handle requests for a specific domain. In this case, two domains (`www.example1.com` and `www.example2.com`) are configured to handle incoming HTTPS requests, proxying them to different backend servers.
-
-- **HTTPS (SSL)**: Both server blocks are configured to listen on port `443`, which is the default port for HTTPS traffic. SSL/TLS encryption is enabled by the `ssl` keyword after the `listen` directive.
+Let’s break it down in detail:
 
 ---
 
-### **Server Block 1: Handling Requests for `www.example1.com`**
+### **1. Lua Configuration Block (`content_by_lua_block`)**
 
 ```nginx
-server {
-    listen       443 ssl;
-    server_name www.example1.com;
-
-    location / {
-        proxy_pass https://backend1.example.com;
-        proxy_ssl_name $host;   # Use the Host header as the SNI value
-    }
+content_by_lua_block {
+    local host = ngx.var.host
+    -- Conditional logic based on host or other factors
+    if host == "www.example1.com" then
+        ngx.var.backend_url = "https://backend1.example.com"
+    elseif host == "www.example2.com" then
+        ngx.var.backend_url = "https://backend2.example.com"
+    else
+        ngx.var.backend_url = "https://default-backend.example.com"
+    end
 }
 ```
 
-#### 1. **`listen 443 ssl;`**
-- This directive tells NGINX to listen on **port 443**, which is the default port for HTTPS traffic, and to enable SSL/TLS encryption. It means that this server block will handle incoming secure (HTTPS) requests.
-
-#### 2. **`server_name www.example1.com;`**
-- This specifies that the server block will handle requests for `www.example1.com`. When a client makes a request to `https://www.example1.com`, NGINX will match the hostname in the request to the `server_name` directive and process the request using this block.
-
-#### 3. **`location / { ... }`**
-- This block defines how the server should handle requests that match the root URL path (`/`), meaning requests for the entire site. Here, the requests are being **proxied** to an upstream server.
-
-#### 4. **`proxy_pass https://backend1.example.com;`**
-- The `proxy_pass` directive tells NGINX to forward the incoming request to the backend server `https://backend1.example.com`. This means that instead of serving content directly, NGINX acts as a reverse proxy and forwards the HTTPS request to the backend server over a secure connection.
-
-#### 5. **`proxy_ssl_name $host;`**
-- **SNI (Server Name Indication)** is used here to forward the correct **hostname** to the backend server during the SSL/TLS handshake. The `$host` variable contains the value of the `Host` header from the client request, which in this case will be `www.example1.com`.
-- When NGINX makes the SSL/TLS connection to `backend1.example.com`, it sends `www.example1.com` as the **SNI** value during the handshake. This allows `backend1.example.com` to present the correct SSL certificate for `www.example1.com`, assuming it hosts multiple certificates on the same IP address (a common scenario with SNI).
+- **Lua Scripting**: This block uses **Lua** to define custom logic that runs when a request is received. The Lua code checks the value of the `$host` variable (which contains the hostname in the HTTP request's `Host` header).
+- **Conditionally Set `proxy_pass`**: Based on the hostname (or any other custom condition), we set the `$backend_url` variable dynamically. This can be as complex as needed — for example, based on specific request headers, geographical location of the client, or other logic you might want to implement.
+  
+  - If the request is for `www.example1.com`, it forwards to `https://backend1.example.com`.
+  - If the request is for `www.example2.com`, it forwards to `https://backend2.example.com`.
+  - If the host does not match any of the conditions, it defaults to `https://default-backend.example.com`.
 
 ---
 
-### **Server Block 2: Handling Requests for `www.example2.com`**
+### **2. `proxy_pass` Directive**
 
 ```nginx
-server {
-    listen       443 ssl;
-    server_name www.example2.com;
-
-    location / {
-        proxy_pass https://backend2.example.com;
-        proxy_ssl_name $host;   # Use the Host header as the SNI value
-    }
-}
+proxy_pass $backend_url;
 ```
 
-The second server block is structured similarly to the first but is responsible for handling requests to `www.example2.com`.
-
-#### 1. **`listen 443 ssl;`**
-- Again, this tells NGINX to listen on port `443` with SSL/TLS encryption for incoming HTTPS traffic.
-
-#### 2. **`server_name www.example2.com;`**
-- This directive specifies that this server block will handle requests for the domain `www.example2.com`. Requests for this domain will be processed by this block, separate from the first.
-
-#### 3. **`location / { ... }`**
-- Similar to the first server block, this location block defines how to handle requests to the root path (`/`). These requests will be proxied to another backend server.
-
-#### 4. **`proxy_pass https://backend2.example.com;`**
-- Requests to `www.example2.com` are forwarded to `https://backend2.example.com`. The communication between NGINX and the backend server remains secure with HTTPS.
-
-#### 5. **`proxy_ssl_name $host;`**
-- The `$host` variable is passed as the **SNI** value to `backend2.example.com` during the SSL handshake. If `backend2.example.com` hosts multiple SSL certificates for different domains (as is common with SNI), this ensures that the backend serves the correct SSL certificate for `www.example2.com`.
+- **Dynamically Set `proxy_pass`**: The `$backend_url` variable, which is set dynamically by the Lua block, is passed to the `proxy_pass` directive. This means that NGINX will forward the request to the backend server defined in the Lua logic.
+- The URL can change based on the condition set in the Lua block. This provides a flexible way to route requests dynamically to different backend servers based on the request details.
 
 ---
 
-### **Key Concepts and How SNI Works**
+### **3. Using `proxy_ssl_name` to Pass the SNI Value**
 
-1. **SNI (Server Name Indication)**:
-   - SNI is an extension to the SSL/TLS protocol that allows a client (e.g., a browser) to indicate which domain it is trying to reach during the SSL handshake. This is crucial when multiple websites are hosted on the same IP address but require different SSL certificates.
-   - In the context of the provided configuration, NGINX is forwarding the value of the `Host` header (i.e., `$host`) to the backend server as the SNI value. This ensures that the backend server knows which certificate to use when responding to the client.
+```nginx
+proxy_ssl_name $host;   # Ensure the correct SSL certificate is selected based on the domain
+```
 
-2. **Proxying HTTPS Requests**:
-   - The `proxy_pass` directive is used to forward requests to an upstream server. In this case, NGINX is acting as a reverse proxy, meaning it forwards client requests to another server (backend) for processing.
-   - The connection between NGINX and the backend server is made over HTTPS, ensuring that traffic is encrypted during the entire communication process.
-
-3. **Why `proxy_ssl_name $host` is Important**:
-   - By using the `$host` variable for the `proxy_ssl_name`, NGINX ensures that the correct SNI value is sent to the backend server. If `backend1.example.com` or `backend2.example.com` hosts multiple domains and certificates, this ensures that the server can present the appropriate certificate for the requested domain (`www.example1.com` or `www.example2.com`).
-   - Without this configuration, the backend might not be able to determine which certificate to use, leading to SSL errors.
+- **Passing the Host as SNI**: The `proxy_ssl_name` directive is crucial when making an SSL/TLS connection to the backend server. The value of `$host` is passed as the **SNI** to the backend server. This allows the backend to choose the appropriate SSL certificate for the domain requested by the client.
+- Even though the backend server (`backend1.example.com`, `backend2.example.com`, etc.) may host multiple domains, using `proxy_ssl_name $host;` ensures that the **correct certificate** is presented to the client during the handshake.
+- The SNI mechanism is vital when multiple SSL certificates are hosted on the same IP, as it tells the backend server which domain to use for the SSL handshake and which certificate to present.
 
 ---
 
-### **Practical Scenario**
+### **How It Works Together:**
 
-Let’s walk through an example of how this configuration works:
+1. **Incoming Request**:
+   - A client makes a request to `https://www.example1.com`.
 
-1. A client requests `https://www.example1.com`.
-2. NGINX receives the request and matches it to the first server block (`server_name www.example1.com`).
-3. NGINX forwards the request to `https://backend1.example.com` using the `proxy_pass` directive.
-4. During the SSL/TLS handshake, NGINX sends the SNI value as `www.example1.com` to `backend1.example.com`, allowing it to present the correct certificate.
-5. The backend responds to NGINX with the content, and NGINX forwards it back to the client.
+2. **NGINX Receives the Request**:
+   - NGINX matches the request to the `server_name` directive (`www.example1.com` or `www.example2.com`).
+   - The `content_by_lua_block` is executed, and it sets the `$backend_url` variable dynamically.
+     - For `www.example1.com`, the Lua script sets `$backend_url` to `https://backend1.example.com`.
 
-Similarly, for a request to `https://www.example2.com`, NGINX will follow the same steps, but forward the request to `https://backend2.example.com`, ensuring that the correct SSL certificate is used by sending the appropriate SNI value (`www.example2.com`).
+3. **Dynamic `proxy_pass`**:
+   - The `proxy_pass` directive then forwards the request to the backend URL stored in `$backend_url`, i.e., `https://backend1.example.com`.
+  
+4. **SNI Handling**:
+   - The `proxy_ssl_name` directive uses the `$host` variable, which will be `www.example1.com` in this case, to pass the correct **SNI value** to `backend1.example.com` during the SSL handshake.
+   - This ensures that even though multiple domains might be hosted on the same backend server (using SNI), the correct SSL certificate for `www.example1.com` will be selected and presented.
 
+5. **SSL/TLS Handshake**:
+   - The backend server (`backend1.example.com`) receives the connection request and identifies the correct SSL certificate to use based on the SNI (`www.example1.com`).
+  
+6. **Response**:
+   - The backend server processes the request, and the response is sent back through NGINX to the client.
+
+---
+
+### **Practical Use Cases**
+
+This configuration is highly useful in scenarios where:
+
+1. **Multiple Domains with Different Backends**: 
+   - If you have multiple domains hosted on different backend servers but want to forward requests based on the domain name dynamically, this setup allows you to handle such routing efficiently.
+   
+2. **Complex Routing Logic**:
+   - You may want to route traffic not just based on the domain name but based on custom conditions, such as headers, cookies, or even the request's geographical origin. Lua can handle complex logic for routing the traffic to different backends.
+
+3. **Multiple SSL Certificates for the Same Backend**:
+   - If you’re using **SNI** on your backend servers (i.e., multiple SSL certificates on the same IP), this configuration ensures that the backend server uses the correct SSL certificate based on the domain requested by the client, even though the backend could be serving multiple domains.
+   
 ---
 
 ### **Conclusion**
 
-In summary:
-- This NGINX configuration is designed to handle multiple HTTPS domains (`www.example1.com` and `www.example2.com`) by forwarding requests to different backend servers.
-- The `proxy_ssl_name $host;` directive ensures that the correct **SNI value** is passed to the backend servers, enabling them to present the appropriate SSL certificates.
-- This setup is useful when hosting multiple SSL-secured sites on the same NGINX instance but needing to proxy traffic to backend servers that require different SSL certificates for each domain.
+This configuration shows how to combine **Lua scripting** in NGINX with **SNI** to dynamically set the `proxy_pass` directive and ensure the correct **SSL certificate** is used based on the requested domain. By setting the backend server dynamically using Lua (`$backend_url`), and ensuring that `proxy_ssl_name $host;` is used, NGINX can forward traffic securely to the appropriate backend with the correct SNI for SSL/TLS certificate selection.
+

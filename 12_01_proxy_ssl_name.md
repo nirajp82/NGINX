@@ -1,6 +1,3 @@
-Certainly! Let's go through the configuration example step by step, explaining each component in detail with an example and how everything works together. I'll rewrite everything to provide clarity.
-
----
 
 ### NGINX Configuration Explained: Proxy with SNI and Dynamic Backend Selection
 

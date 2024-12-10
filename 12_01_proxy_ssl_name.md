@@ -1,60 +1,107 @@
-### What is SNI, and Why is it Important in SSL/TLS Communication?
+### Table of Contents
 
-**Server Name Indication (SNI)** is an extension to the **SSL/TLS** protocol that allows a client to indicate the hostname it is attempting to connect to at the beginning of the SSL/TLS handshake process. This is particularly important for hosting multiple SSL/TLS certificates on a single IP address, which is common in shared hosting environments, or in cases where multiple services share the same web server.
+1. [Introduction to SNI in SSL/TLS Communication](#what-is-sni-and-why-is-it-important-in-ssltls-communication)
+   - 1.1 [What is SNI?](#what-is-sni)
+   - 1.2 [Why is SNI Important in SSL/TLS Communication?](#why-is-sni-important-in-ssltls-communication)
+     - 1.2.1 [Multiple Certificates on a Single IP](#multiple-certificates-on-a-single-ip)
+     - 1.2.2 [Efficiency and Cost-Effective Use of SSL](#efficiency-and-cost-effective-use-of-ssl)
 
-**Importance in SSL/TLS Communication:**
-- **Multiple Certificates on a Single IP**: Without SNI, a server can only present one SSL/TLS certificate per IP address. This is a limitation because most websites today need to serve different SSL certificates for different domain names, even though they all share the same IP address.
-- **Efficiency and Cost-Effective**: By allowing multiple certificates on a single IP, SNI allows more efficient resource use, making it cheaper and easier for hosting providers and large-scale services to deploy SSL encryption on many sites.
+2. [How SNI Works During the SSL/TLS Handshake](#how-does-sni-work-during-the-ssltls-handshake-process)
+   - 2.1 [ClientHello and the SNI Field](#clienthello-and-the-sni-field)
+   - 2.2 [ServerHello and Certificate Exchange](#serverhello-and-certificate-exchange)
+   - 2.3 [Key Exchange and Session Setup](#key-exchange-and-session-setup)
 
-### How Does SNI Work During the SSL Handshake Process?
+3. [SNI with Reverse Proxy (NGINX)](#how-does-sni-function-when-there-is-a-reverse-proxy-such-as-nginx-involved)
+   - 3.1 [Using `proxy_ssl_name` Directive](#using-proxy_ssl_name-directive)
+   - 3.2 [The Role of the `$host` Variable](#the-role-of-the-host-variable)
+   - 3.3 [How SNI Works with NGINX as a Reverse Proxy](#how-sni-works-with-nginx-as-a-reverse-proxy)
 
-The **SSL/TLS handshake** involves several steps where the client and server exchange information to establish a secure connection. SNI is used during the **ClientHello** message, which is the first step of the handshake, to inform the server which hostname (domain) the client is trying to connect to.
+4. [Why `proxy_ssl_name $host;` is Important](#why-is-this-important)
+   - 4.1 [SNI (Server Name Indication)](#sni-server-name-indication)
+   - 4.2 [Multiple Hostnames/Virtual Hosts](#multiple-hostnamesvirtual-hosts)
+   - 4.3 [Backend SSL Configuration](#backend-ssl-configuration)
 
-Here’s a breakdown of the process:
-1. **ClientHello**: When a client (e.g., a web browser) initiates an SSL/TLS connection, it sends a **ClientHello** message to the server. This message contains various pieces of information, such as the supported SSL/TLS versions, cipher suites, and in the case of SNI, the **hostname** (e.g., `www.example.com`) that the client is trying to connect to.
+5. [Example Scenario with NGINX Reverse Proxy](#example-scenario)
+   - 5.1 [NGINX Configuration with Multiple Backends](#nginx-configuration-with-multiple-backends)
+   - 5.2 [Process Flow for `example1.com` and `example2.com`](#process-flow-for-example1com-and-example2com)
+
+6. [What Happens Without `proxy_ssl_name $host;`](#without-proxy_ssl_name-host)
    
-   - The SNI information is included in the `server_name` field within the ClientHello message. This is the key part that allows the server to know which domain the client is requesting.
+7. [Conclusion](#conclusion)
 
-2. **ServerHello**: After receiving the ClientHello, the server checks the SNI field and determines which SSL/TLS certificate to present. If the server is configured to handle multiple domains, it can select the appropriate certificate for the domain name provided in the SNI field.
+---
 
-3. **Certificate Exchange**: The server sends the certificate associated with the requested hostname (domain) back to the client in the ServerHello message. If there is no SNI, or if no certificate matches the provided SNI, the server may return a default certificate, or in some cases, fail the handshake if it cannot identify a valid certificate for the hostname.
+### 1. Introduction to SNI in SSL/TLS Communication
 
-4. **Key Exchange and Session Setup**: Once the certificate is validated by the client, the server and client complete the remainder of the handshake (key exchange, secure parameters setup) and establish a secure communication channel.
+#### 1.1 What is SNI?
 
-### How Does SNI Function When There Is a Reverse Proxy, Such as NGINX, Involved?
+**Server Name Indication (SNI)** is an extension to the **SSL/TLS** protocol that allows a client to indicate the hostname it is attempting to connect to at the beginning of the SSL/TLS handshake process.
 
-In NGINX, when you configure it as a reverse proxy to forward requests to an HTTPS backend server, it may need to communicate with that backend server over SSL/TLS. The `proxy_ssl_name` directive allows you to specify the **hostname** that NGINX should use when establishing the SSL/TLS connection with the backend server.
+#### 1.2 Why is SNI Important in SSL/TLS Communication?
 
-- **`proxy_ssl_name`**: This directive is used to set the **hostname** NGINX uses when performing the SSL handshake with the upstream (backend) server. It is especially useful when you're using SSL/TLS with the backend and need to ensure that the correct certificate is used during the handshake, based on the hostname of the request.
+##### 1.2.1 Multiple Certificates on a Single IP
 
-- **`$host`**: This is a built-in NGINX variable that represents the **hostname** (or domain name) from the incoming request's `Host` header. In an HTTP request, the `Host` header typically contains the domain name the client is trying to reach (e.g., `www.example.com`). The `$host` variable captures this value.
+Without SNI, a server can only present one SSL/TLS certificate per IP address, limiting the ability to serve multiple domain names securely from the same server.
 
-So, when you use:
+##### 1.2.2 Efficiency and Cost-Effective Use of SSL
 
-```nginx
-proxy_ssl_name $host;
-```
+SNI allows for the efficient use of resources, enabling multiple certificates to be hosted on a single IP, which reduces costs and complexity, especially in shared hosting and large-scale cloud environments.
 
-it tells NGINX to take the **hostname** from the client's request (the value of the `Host` header) and use that as the `Server Name` for the SSL handshake with the backend server.
+---
 
-### Why is This Important?
+### 2. How SNI Works During the SSL/TLS Handshake
 
-This is important for the following reasons:
+#### 2.1 ClientHello and the SNI Field
 
-1. **SNI (Server Name Indication)**: The `$host` variable allows NGINX to pass the correct hostname to the backend server during the SSL/TLS handshake, which is crucial for **SNI** (Server Name Indication). SNI is an SSL/TLS extension that allows multiple SSL certificates to be hosted on the same IP address. When the backend server hosts multiple SSL certificates, the server needs to know which certificate to present based on the requested hostname. By using `$host`, you ensure that the correct certificate is selected by the backend server.
+In the initial **ClientHello** message, the client includes the **SNI** field, which indicates the hostname that the client wants to connect to.
 
-2. **Multiple Hostnames/Virtual Hosts**: If your backend server hosts multiple virtual hosts and each virtual host has its own SSL certificate, setting `proxy_ssl_name $host;` ensures that the backend server uses the correct certificate for the requested hostname.
+#### 2.2 ServerHello and Certificate Exchange
 
-3. **Backend SSL Configuration**: In some cases, the backend server may perform certificate validation based on the hostname in the SNI field. If the hostname in the SNI doesn't match the expected hostname for that backend, the server may reject the connection. By forwarding the original `Host` header value (`$host`), you ensure that the SSL/TLS connection with the backend is properly established.
+Upon receiving the **ClientHello** message, the server looks up the SNI value and selects the appropriate certificate to return in the **ServerHello** message.
 
-### Example Scenario
+#### 2.3 Key Exchange and Session Setup
 
-Let’s say NGINX is acting as a reverse proxy, and you have two backend servers, each handling a different domain name over HTTPS:
+After the certificate exchange, the client and server proceed with key exchange and finalizing the secure connection.
 
-- `www.example1.com` is handled by `backend1.example.com`
-- `www.example2.com` is handled by `backend2.example.com`
+---
 
-Your NGINX configuration might look something like this:
+### 3. SNI with Reverse Proxy (NGINX)
+
+#### 3.1 Using `proxy_ssl_name` Directive
+
+The `proxy_ssl_name` directive is used in NGINX when proxying requests to an HTTPS backend. It ensures that the correct hostname is used in the SSL handshake with the backend server.
+
+#### 3.2 The Role of the `$host` Variable
+
+The `$host` variable in NGINX represents the **hostname** from the `Host` header of the incoming HTTP request. This value is used to specify the **SNI** when NGINX forwards the request to the backend server.
+
+#### 3.3 How SNI Works with NGINX as a Reverse Proxy
+
+NGINX uses the `$host` variable in the `proxy_ssl_name` directive to set the **SNI** during the SSL/TLS handshake with the backend server.
+
+---
+
+### 4. Why `proxy_ssl_name $host;` is Important
+
+#### 4.1 SNI (Server Name Indication)
+
+By forwarding the correct hostname using the `$host` variable, NGINX ensures that the correct certificate is selected by the backend server, which is critical for multiple SSL certificates hosted on the same IP.
+
+#### 4.2 Multiple Hostnames/Virtual Hosts
+
+When a backend server hosts multiple virtual hosts with different SSL certificates, using `$host` ensures that each hostname receives the correct certificate, avoiding certificate mismatches.
+
+#### 4.3 Backend SSL Configuration
+
+Some backend servers validate the hostname during the SSL handshake. By passing the correct SNI value (`$host`), NGINX helps ensure that the SSL handshake is successful and the connection is established securely.
+
+---
+
+### 5. Example Scenario with NGINX Reverse Proxy
+
+#### 5.1 NGINX Configuration with Multiple Backends
+
+The following NGINX configuration sets up reverse proxying with SSL to two backend servers, each handling a different domain.
 
 ```nginx
 server {
@@ -78,18 +125,25 @@ server {
 }
 ```
 
-### What happens here?
-1. A client requests `https://www.example1.com`.
-2. The NGINX reverse proxy receives the request and forwards it to `https://backend1.example.com`.
-3. The `proxy_ssl_name $host;` directive tells NGINX to set the SNI field in the SSL/TLS handshake to `www.example1.com` (the hostname from the `Host` header).
-4. The backend server `backend1.example.com` sees the SNI and presents the correct SSL certificate for `www.example1.com`.
+#### 5.2 Process Flow for `example1.com` and `example2.com`
 
-For `www.example2.com`, the process is similar but with `backend2.example.com`.
+1. Client requests `https://www.example1.com`.
+2. NGINX forwards the request to `https://backend1.example.com` with the SNI set to `example1.com`.
+3. Backend1 responds with the appropriate certificate for `example1.com`.
+4. A similar process occurs for `www.example2.com` and `backend2.example.com`.
 
-### Without `proxy_ssl_name $host;`
-If you do not use `proxy_ssl_name $host;`, the SSL/TLS handshake would not include the correct SNI value, and depending on how the backend is configured, this could result in the wrong certificate being presented or an SSL handshake failure.
+---
 
-### Conclusion
+### 6. What Happens Without `proxy_ssl_name $host;`
 
-- **`proxy_ssl_name $host;`** configures NGINX to forward the hostname from the `Host` header in the incoming request as the **SNI** when establishing an SSL/TLS connection with a backend server.
-- This is essential when using multiple SSL certificates on the same backend server, allowing NGINX to correctly direct SSL/TLS connections based on the requested domain.
+Without the `proxy_ssl_name $host;` directive, NGINX would not include the correct SNI value during the SSL handshake. This can lead to:
+
+- SSL/TLS handshake failures
+- The wrong SSL certificate being presented by the backend server
+
+---
+
+### 7. Conclusion
+
+The `proxy_ssl_name $host;` directive in NGINX plays a critical role in ensuring that the correct SSL certificate is used when proxying requests to an HTTPS backend. By forwarding the hostname from the request's `Host` header, it allows NGINX to properly use **SNI** during the SSL/TLS handshake, ensuring that multi-domain certificates are handled correctly and securely.
+

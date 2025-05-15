@@ -298,3 +298,5 @@ Tokens accumulate again only when requests slow down,
 refilling the bucket up to max capacity (burst+1).
 ```
 
+![image](https://github.com/user-attachments/assets/6d9ee476-f7b5-4913-bd98-4d38127a51b9)
+

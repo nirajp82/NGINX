@@ -17,10 +17,10 @@ NGINX implements rate limiting using the **token bucket algorithm**, which contr
 
 ```nginx
 # Define rate limit zone per hostname with 2000 requests per minute
-limit_req_zone $ssl_server_name zone=by_host_limit:10m rate=2000r/m;
+limit_req_zone $ssl_server_name zone=rl_by_host_srv_name:10m rate=2000r/m;
 
 # Apply the limit with a burst of 200 requests allowed instantly
-limit_req zone=by_host_limit burst=200 nodelay;
+limit_req zone=rl_by_host_srv_name burst=200 nodelay;
 ```
 
 This setup means each hostname is allowed up to 2000 requests per minute, with short bursts up to 200 extra requests allowed immediately without delay.
